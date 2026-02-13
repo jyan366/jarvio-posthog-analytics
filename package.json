@@ -1,0 +1,16 @@
+{
+  "name": "jarvio-posthog-analytics",
+  "private": true,
+  "scripts": {
+    "test": "node --experimental-vm-modules node_modules/.bin/jest --forceExit",
+    "test:unit": "node --experimental-vm-modules node_modules/.bin/jest tests/api/test_refresh.js tests/api/test_data.js tests/api/test_time_calculation.js --forceExit",
+    "test:integration": "bash tests/api/integration_test.sh",
+    "test:all": "bash tests/run_api_tests.sh"
+  },
+  "jest": {
+    "testMatch": ["**/tests/api/test_*.js"]
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}
