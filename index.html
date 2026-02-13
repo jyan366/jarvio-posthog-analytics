@@ -2013,6 +2013,7 @@
                 // User-level view
                 TIME_SERIES_DATA.organizations
                     .filter(org => !isGenericDomain(org.name))
+                    .filter(org => showInternal || !isInternalDomain(org.name))
                     .forEach(org => {
                         org.users.forEach(user => {
                             let userTime = 0;
@@ -2467,7 +2468,9 @@
             
             // Time chart (timeline) - aggregate daily data by date
             const dailyAgg = {};
-            TIME_SERIES_DATA.organizations.forEach(org => {
+            TIME_SERIES_DATA.organizations
+            .filter(org => showInternal || !isInternalDomain(org.name))
+            .forEach(org => {
                 org.users.forEach(user => {
                     Object.entries(user.dailyData || {}).forEach(([date, data]) => {
                         if (date >= selectedStartDate && date <= selectedEndDate) {
@@ -2600,85 +2603,105 @@
             const cfg = metricConfig[currentMetric];
             const allDates = getDateRange();
 
-            // Build per-org daily aggregates
-            const orgDailyMap = {}; // orgName -> { date -> value }
-            const orgTotals = {};   // orgName -> total value (for sorting/filtering)
+            const orgs = TIME_SERIES_DATA.organizations.filter(o => !isGenericDomain(o.name)).filter(o => showInternal || !isInternalDomain(o.name));
 
-            const orgs = TIME_SERIES_DATA.organizations.filter(o => !isGenericDomain(o.name));
-            orgs.forEach(org => {
-                const daily = {};
-                allDates.forEach(d => daily[d] = 0);
-
-                org.users.forEach(user => {
-                    Object.entries(user.dailyData || {}).forEach(([date, data]) => {
-                        if (date >= selectedStartDate && date <= selectedEndDate) {
-                            if (currentMetric === 'time') {
-                                daily[date] = (daily[date] || 0) + (data.timeMinutes || 0);
-                            } else if (currentMetric === 'events') {
-                                daily[date] = (daily[date] || 0) + (data.events || 0);
-                            } else if (currentMetric === 'flowsStarted') {
-                                // flows are totals not daily, skip daily breakdown
-                            } else if (currentMetric === 'flowsCompleted') {
-                                // same
-                            } else if (currentMetric === 'successRate') {
-                                // same
-                            }
-                        }
-                    });
-
-                    // For flow metrics, distribute evenly across active days (approximation)
-                    if (['flowsStarted', 'flowsCompleted', 'successRate'].includes(currentMetric)) {
-                        const activeDates = Object.keys(user.dailyData || {}).filter(
-                            d => d >= selectedStartDate && d <= selectedEndDate
-                        );
-                        if (activeDates.length > 0) {
-                            const fs = user.flows?.started || 0;
-                            const fc = user.flows?.completed || 0;
-                            activeDates.forEach(date => {
-                                if (currentMetric === 'flowsStarted') {
-                                    daily[date] = (daily[date] || 0) + fs / activeDates.length;
-                                } else if (currentMetric === 'flowsCompleted') {
-                                    daily[date] = (daily[date] || 0) + fc / activeDates.length;
-                                }
-                            });
+            // Helper: aggregate daily data for a single user into a daily map
+            function buildUserDaily(user, daily) {
+                Object.entries(user.dailyData || {}).forEach(([date, data]) => {
+                    if (date >= selectedStartDate && date <= selectedEndDate) {
+                        if (currentMetric === 'time') {
+                            daily[date] = (daily[date] || 0) + (data.timeMinutes || 0);
+                        } else if (currentMetric === 'events') {
+                            daily[date] = (daily[date] || 0) + (data.events || 0);
                         }
                     }
                 });
+                if (['flowsStarted', 'flowsCompleted'].includes(currentMetric)) {
+                    const activeDates = Object.keys(user.dailyData || {}).filter(
+                        d => d >= selectedStartDate && d <= selectedEndDate
+                    );
+                    if (activeDates.length > 0) {
+                        const fs = user.flows?.started || 0;
+                        const fc = user.flows?.completed || 0;
+                        activeDates.forEach(date => {
+                            if (currentMetric === 'flowsStarted') {
+                                daily[date] = (daily[date] || 0) + fs / activeDates.length;
+                            } else if (currentMetric === 'flowsCompleted') {
+                                daily[date] = (daily[date] || 0) + fc / activeDates.length;
+                            }
+                        });
+                    }
+                }
+            }
 
-                orgDailyMap[org.name] = daily;
-                orgTotals[org.name] = allDates.reduce((s, d) => s + (daily[d] || 0), 0);
-            });
-
-            // For success rate, compute per-org total then plot as flat or use started/completed ratio per day
-            if (currentMetric === 'successRate') {
-                orgs.forEach(org => {
-                    const daily = orgDailyMap[org.name];
-                    // Rebuild: for each date compute cumulative started & completed
-                    const startedDaily = {};
-                    const completedDaily = {};
-                    allDates.forEach(d => { startedDaily[d] = 0; completedDaily[d] = 0; });
-                    org.users.forEach(user => {
-                        const activeDates = Object.keys(user.dailyData || {}).filter(
-                            d => d >= selectedStartDate && d <= selectedEndDate
-                        );
-                        if (activeDates.length > 0) {
-                            const fs = user.flows?.started || 0;
-                            const fc = user.flows?.completed || 0;
-                            activeDates.forEach(date => {
-                                startedDaily[date] += fs / activeDates.length;
-                                completedDaily[date] += fc / activeDates.length;
-                            });
-                        }
-                    });
-                    allDates.forEach(d => {
-                        daily[d] = startedDaily[d] > 0 ? (completedDaily[d] / startedDaily[d]) * 100 : 0;
-                    });
-                    orgTotals[org.name] = Object.values(daily).reduce((s, v) => s + v, 0);
+            // Helper: fix up success rate daily map using started/completed per day
+            function applySuccessRate(daily, users) {
+                const startedDaily = {};
+                const completedDaily = {};
+                allDates.forEach(d => { startedDaily[d] = 0; completedDaily[d] = 0; });
+                users.forEach(user => {
+                    const activeDates = Object.keys(user.dailyData || {}).filter(
+                        d => d >= selectedStartDate && d <= selectedEndDate
+                    );
+                    if (activeDates.length > 0) {
+                        const fs = user.flows?.started || 0;
+                        const fc = user.flows?.completed || 0;
+                        activeDates.forEach(date => {
+                            startedDaily[date] += fs / activeDates.length;
+                            completedDaily[date] += fc / activeDates.length;
+                        });
+                    }
+                });
+                allDates.forEach(d => {
+                    daily[d] = startedDaily[d] > 0 ? (completedDaily[d] / startedDaily[d]) * 100 : 0;
                 });
             }
 
-            // Only show orgs with data, sorted by total descending, limit to top 10
-            const activeOrgs = Object.entries(orgTotals)
+            let entityDailyMap = {}; // label -> { date -> value }
+            let entityTotals = {};   // label -> total
+
+            if (currentView === 'user') {
+                // Build per-user daily aggregates
+                orgs.forEach(org => {
+                    org.users.forEach(user => {
+                        const label = user.email || user.name || 'unknown';
+                        const daily = {};
+                        allDates.forEach(d => daily[d] = 0);
+                        buildUserDaily(user, daily);
+
+                        if (currentMetric === 'successRate') {
+                            applySuccessRate(daily, [user]);
+                        }
+
+                        // Merge if same email appears in multiple orgs (unlikely but safe)
+                        if (entityDailyMap[label]) {
+                            allDates.forEach(d => {
+                                entityDailyMap[label][d] = (entityDailyMap[label][d] || 0) + (daily[d] || 0);
+                            });
+                        } else {
+                            entityDailyMap[label] = daily;
+                        }
+                        entityTotals[label] = (entityTotals[label] || 0) + allDates.reduce((s, d) => s + (daily[d] || 0), 0);
+                    });
+                });
+            } else {
+                // Build per-org daily aggregates (original behavior)
+                orgs.forEach(org => {
+                    const daily = {};
+                    allDates.forEach(d => daily[d] = 0);
+                    org.users.forEach(user => buildUserDaily(user, daily));
+
+                    if (currentMetric === 'successRate') {
+                        applySuccessRate(daily, org.users);
+                    }
+
+                    entityDailyMap[org.name] = daily;
+                    entityTotals[org.name] = allDates.reduce((s, d) => s + (daily[d] || 0), 0);
+                });
+            }
+
+            // Only show entities with data, sorted by total descending, limit to top 10
+            const activeEntities = Object.entries(entityTotals)
                 .filter(([_, total]) => total > 0)
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 10)
@@ -2691,11 +2714,11 @@
             });
 
             // Build datasets
-            const datasets = activeOrgs.map((orgName, i) => {
+            const datasets = activeEntities.map((entityName, i) => {
                 const color = ORG_COLORS[i % ORG_COLORS.length];
-                const daily = orgDailyMap[orgName];
+                const daily = entityDailyMap[entityName];
                 return {
-                    label: orgName,
+                    label: entityName,
                     data: allDates.map(d => daily[d] || 0),
                     borderColor: color,
                     backgroundColor: color + '20',
@@ -2789,6 +2812,15 @@
         });
 
         // EVENT LISTENERS
+        // Initialize internal toggle from state
+        const internalToggle = document.getElementById('show-internal-toggle');
+        internalToggle.checked = showInternal;
+        internalToggle.addEventListener('change', function() {
+            showInternal = this.checked;
+            localStorage.setItem('showInternal', showInternal);
+            refreshDashboard();
+        });
+
         document.getElementById('search-input').addEventListener('input', applyFilters);
         
         document.querySelectorAll('.filter-btn').forEach(btn => {
