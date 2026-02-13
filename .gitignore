@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+.env
+.venv/
+venv/
+*.log
+*.bak
+*_backup_*
+.DS_Store
+node_modules/
+data/customer_data.json

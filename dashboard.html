@@ -1,0 +1,2752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jarvio Analytics - Time Tracking & User-Level Insights</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .date-range-picker {
+            background: white;
+            padding: 25px 40px;
+            border-bottom: 2px solid #e9ecef;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .date-range-picker h3 {
+            color: #495057;
+            font-size: 1.1em;
+            margin-right: 10px;
+        }
+        
+        .date-preset-btn {
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        
+        .date-preset-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .date-preset-btn.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .view-toggle {
+            background: #f8f9fa;
+            padding: 20px 40px;
+            border-bottom: 2px solid #e9ecef;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .view-toggle h3 {
+            color: #495057;
+            font-size: 1.1em;
+            margin-right: 10px;
+        }
+        
+        .view-btn {
+            padding: 12px 25px;
+            border: 2px solid #28a745;
+            background: white;
+            color: #28a745;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        
+        .view-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+        
+        .view-btn.active {
+            background: #28a745;
+            color: white;
+        }
+        
+        /* Usage Chart Section */
+        .usage-chart-section {
+            padding: 30px 40px;
+            background: white;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .usage-chart-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .usage-chart-header h3 {
+            color: #495057;
+            font-size: 1.3em;
+            margin: 0;
+        }
+        
+        .metric-toggles {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .metric-toggle {
+            padding: 8px 18px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85em;
+            font-weight: 600;
+            transition: all 0.25s ease;
+            user-select: none;
+        }
+        
+        .metric-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+        }
+        
+        .metric-toggle.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+        
+        .usage-chart-canvas-wrap {
+            position: relative;
+            height: 420px;
+        }
+        
+        .usage-chart-canvas-wrap canvas {
+            width: 100% !important;
+        }
+        
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 40px;
+            background: #f8f9fa;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+        
+        .stat-card .number {
+            font-size: 2.8em;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+        
+        .stat-card.time-stat .number {
+            color: #28a745;
+            font-size: 2.5em;
+        }
+        
+        .stat-card .label {
+            font-size: 0.95em;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .controls {
+            padding: 30px 40px;
+            background: white;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 12px 40px 12px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.2s ease;
+        }
+        
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        
+        .filter-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+        
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .sort-controls select {
+            padding: 10px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 0.9em;
+            cursor: pointer;
+            background: white;
+        }
+        
+        .entities-grid {
+            padding: 40px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 25px;
+        }
+        
+        .entity-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            animation: fadeIn 0.4s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .entity-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+        }
+        
+        .entity-card.expanded {
+            grid-column: span 2;
+        }
+        
+        .entity-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            position: relative;
+        }
+        
+        .entity-header.high-usage {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+        
+        .entity-header.user-level {
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+        }
+        
+        .entity-header h3 {
+            font-size: 1.3em;
+            margin-bottom: 5px;
+            word-break: break-word;
+        }
+        
+        .entity-header .email {
+            font-size: 0.9em;
+            opacity: 0.9;
+            font-weight: normal;
+        }
+        
+        .time-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.3);
+            font-size: 0.9em;
+            font-weight: 700;
+        }
+        
+        .entity-metrics {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .metric {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .metric-value {
+            font-size: 1.5em;
+            font-weight: 700;
+        }
+        
+        .metric-label {
+            font-size: 0.8em;
+            opacity: 0.9;
+        }
+        
+        .entity-body {
+            padding: 20px;
+        }
+        
+        .time-display {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .time-display .time-value {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .time-display .time-label {
+            font-size: 1em;
+            opacity: 0.9;
+        }
+        
+        .time-breakdown {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+        
+        .flow-analytics {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .flow-analytics h4 {
+            margin-bottom: 10px;
+            color: #495057;
+            font-size: 1em;
+        }
+        
+        .flow-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .flow-stat {
+            font-size: 0.85em;
+        }
+        
+        .flow-stat strong {
+            color: #667eea;
+        }
+        
+        .user-list {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #e9ecef;
+        }
+        
+        .user-list h4 {
+            margin-bottom: 15px;
+            color: #495057;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .user-item {
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .user-item:hover {
+            background: #e9ecef;
+        }
+        
+        .user-info {
+            flex: 1;
+        }
+        
+        .user-email {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 4px;
+        }
+        
+        .user-stats {
+            font-size: 0.85em;
+            color: #6c757d;
+        }
+        
+        .user-time {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: #28a745;
+        }
+        
+        .drill-down-btn {
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85em;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .drill-down-btn:hover {
+            background: #5558d9;
+            transform: translateY(-2px);
+        }
+        
+        .back-btn {
+            padding: 10px 20px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            margin-bottom: 20px;
+        }
+        
+        .back-btn:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+        
+        .charts-section {
+            padding: 40px;
+            background: #f8f9fa;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 30px;
+        }
+        
+        .chart-container {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .chart-container h3 {
+            margin-bottom: 20px;
+            color: #495057;
+            font-size: 1.2em;
+        }
+        
+        .chart-container.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            flex-direction: column;
+        }
+        
+        .loading-overlay.visible {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #e9ecef;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            margin-top: 20px;
+            color: #667eea;
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+            font-size: 1.2em;
+        }
+        
+        @media (max-width: 768px) {
+            .entity-card.expanded {
+                grid-column: span 1;
+            }
+            
+            .charts-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="spinner"></div>
+        <div class="loading-text">Loading analytics data...</div>
+    </div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>⏱️ Jarvio Time Tracking & User Analytics</h1>
+            <p id="date-range-display">Accurate Time Tracking | User-Level Insights</p>
+        </div>
+        
+        <div class="date-range-picker">
+            <h3>📅 Date Range:</h3>
+            <button class="date-preset-btn" data-days="7">Last 7 Days</button>
+            <button class="date-preset-btn" data-days="14">Last 14 Days</button>
+            <button class="date-preset-btn" data-days="30">Last 30 Days</button>
+            <button class="date-preset-btn" data-days="60">Last 60 Days</button>
+            <button class="date-preset-btn active" data-days="0">All Time</button>
+        </div>
+        
+        <div class="view-toggle">
+            <h3>👁️ View:</h3>
+            <button class="view-btn active" data-view="organization">🏢 Organization View</button>
+            <button class="view-btn" data-view="user">👤 User-Level View</button>
+        </div>
+        
+        <div class="usage-chart-section">
+            <div class="usage-chart-header">
+                <h3>📈 Usage Overview</h3>
+                <div class="metric-toggles">
+                    <button class="metric-toggle active" data-metric="time">⏱️ Time Spent</button>
+                    <button class="metric-toggle" data-metric="events">📊 Events</button>
+                    <button class="metric-toggle" data-metric="flowsStarted">🚀 Flows Started</button>
+                    <button class="metric-toggle" data-metric="flowsCompleted">✅ Flows Completed</button>
+                    <button class="metric-toggle" data-metric="successRate">📈 Success Rate</button>
+                </div>
+            </div>
+            <div class="usage-chart-canvas-wrap">
+                <canvas id="usage-overview-chart"></canvas>
+            </div>
+        </div>
+        
+        <div class="summary-stats">
+            <div class="stat-card">
+                <div class="number" id="total-entities">0</div>
+                <div class="label" id="entity-label">Organizations</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="total-users">0</div>
+                <div class="label">Total Users</div>
+            </div>
+            <div class="stat-card time-stat">
+                <div class="number" id="total-time">0h 0m</div>
+                <div class="label">Total Time Spent</div>
+            </div>
+            <div class="stat-card time-stat">
+                <div class="number" id="avg-time">0h 0m</div>
+                <div class="label">Avg Time per Entity</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="total-events">0</div>
+                <div class="label">Total Events</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="total-flows">0</div>
+                <div class="label">Flow Executions</div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="🔍 Search..." autocomplete="off">
+            </div>
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="active">Active Only</button>
+                <button class="filter-btn" data-filter="high-time">High Time (>1h)</button>
+            </div>
+            <div class="sort-controls">
+                <select id="sort-select">
+                    <option value="time-desc">Time (High to Low)</option>
+                    <option value="time-asc">Time (Low to High)</option>
+                    <option value="events-desc">Events (High to Low)</option>
+                    <option value="name-asc">Name (A-Z)</option>
+                </select>
+            </div>
+        </div>
+        
+        <div id="back-button-container"></div>
+        
+        <div class="entities-grid" id="entities-container"></div>
+        
+        <div class="charts-section">
+            <div class="chart-container full-width">
+                <h3>⏱️ Time Spent Over Selected Period</h3>
+                <canvas id="time-chart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>🏆 Top 10 by Time Spent</h3>
+                <canvas id="top-time-chart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>📊 Top 10 by Events</h3>
+                <canvas id="top-events-chart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // GENERIC EMAIL DOMAINS TO EXCLUDE
+        const GENERIC_DOMAINS = [
+            'gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com',
+            'icloud.com', 'protonmail.com', 'aol.com', 'mail.com'
+        ];
+
+        // SAMPLE DATA WITH USER-LEVEL BREAKDOWN AND TIME TRACKING
+        const TIME_SERIES_DATA = {
+                    "organizations": [
+                                {
+                                            "name": "theamazonwhisperer.com",
+                                            "users": [
+                                                        {
+                                                                    "email": "alex@theamazonwhisperer.com",
+                                                                    "totalTimeMinutes": 338,
+                                                                    "events": 14343,
+                                                                    "flows": {
+                                                                                "started": 360,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {
+                                                                                "2026-02-03": {
+                                                                                            "timeMinutes": 52.4,
+                                                                                            "events": 346
+                                                                                },
+                                                                                "2026-02-04": {
+                                                                                            "timeMinutes": 109.9,
+                                                                                            "events": 726
+                                                                                },
+                                                                                "2026-02-05": {
+                                                                                            "timeMinutes": 97.2,
+                                                                                            "events": 642
+                                                                                },
+                                                                                "2026-02-06": {
+                                                                                            "timeMinutes": 11.4,
+                                                                                            "events": 75
+                                                                                },
+                                                                                "2026-02-09": {
+                                                                                            "timeMinutes": 41.2,
+                                                                                            "events": 272
+                                                                                },
+                                                                                "2026-02-10": {
+                                                                                            "timeMinutes": 17.8,
+                                                                                            "events": 117
+                                                                                },
+                                                                                "2026-02-11": {
+                                                                                            "timeMinutes": 8.2,
+                                                                                            "events": 54
+                                                                                }
+                                                                    }
+                                                        },
+                                                        {
+                                                                    "email": "ben.w@theamazonwhisperer.com",
+                                                                    "totalTimeMinutes": 1,
+                                                                    "events": 8,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {
+                                                                                "2026-02-03": {
+                                                                                            "timeMinutes": 0.2,
+                                                                                            "events": 0
+                                                                                },
+                                                                                "2026-02-04": {
+                                                                                            "timeMinutes": 0.3,
+                                                                                            "events": 0
+                                                                                },
+                                                                                "2026-02-05": {
+                                                                                            "timeMinutes": 0.3,
+                                                                                            "events": 0
+                                                                                },
+                                                                                "2026-02-06": {
+                                                                                            "timeMinutes": 0.0,
+                                                                                            "events": 0
+                                                                                },
+                                                                                "2026-02-09": {
+                                                                                            "timeMinutes": 0.1,
+                                                                                            "events": 0
+                                                                                },
+                                                                                "2026-02-10": {
+                                                                                            "timeMinutes": 0.1,
+                                                                                            "events": 0
+                                                                                },
+                                                                                "2026-02-11": {
+                                                                                            "timeMinutes": 0.0,
+                                                                                            "events": 0
+                                                                                }
+                                                                    }
+                                                        },
+                                                        {
+                                                                    "email": "ryan@theamazonwhisperer.com",
+                                                                    "totalTimeMinutes": 1342,
+                                                                    "events": 56863,
+                                                                    "flows": {
+                                                                                "started": 371,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {
+                                                                                "2026-02-03": {
+                                                                                            "timeMinutes": 208.1,
+                                                                                            "events": 1374
+                                                                                },
+                                                                                "2026-02-04": {
+                                                                                            "timeMinutes": 436.3,
+                                                                                            "events": 2881
+                                                                                },
+                                                                                "2026-02-05": {
+                                                                                            "timeMinutes": 385.8,
+                                                                                            "events": 2547
+                                                                                },
+                                                                                "2026-02-06": {
+                                                                                            "timeMinutes": 45.1,
+                                                                                            "events": 297
+                                                                                },
+                                                                                "2026-02-09": {
+                                                                                            "timeMinutes": 163.7,
+                                                                                            "events": 1081
+                                                                                },
+                                                                                "2026-02-10": {
+                                                                                            "timeMinutes": 70.5,
+                                                                                            "events": 465
+                                                                                },
+                                                                                "2026-02-11": {
+                                                                                            "timeMinutes": 32.5,
+                                                                                            "events": 214
+                                                                                }
+                                                                    }
+                                                        }
+                                            ]
+                                },
+                                {
+                                            "name": "marketrocket.co.uk",
+                                            "users": [
+                                                        {
+                                                                    "email": "matthew.peck@marketrocket.co.uk",
+                                                                    "totalTimeMinutes": 30,
+                                                                    "events": 481,
+                                                                    "flows": {
+                                                                                "started": 7,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {
+                                                                                "2025-12-16": {
+                                                                                            "timeMinutes": 1.6,
+                                                                                            "events": 25
+                                                                                },
+                                                                                "2026-01-13": {
+                                                                                            "timeMinutes": 2.2,
+                                                                                            "events": 34
+                                                                                },
+                                                                                "2026-01-15": {
+                                                                                            "timeMinutes": 0.8,
+                                                                                            "events": 13
+                                                                                },
+                                                                                "2026-01-16": {
+                                                                                            "timeMinutes": 0.8,
+                                                                                            "events": 12
+                                                                                },
+                                                                                "2026-01-21": {
+                                                                                            "timeMinutes": 0.8,
+                                                                                            "events": 12
+                                                                                },
+                                                                                "2026-01-28": {
+                                                                                            "timeMinutes": 23.8,
+                                                                                            "events": 382
+                                                                                }
+                                                                    }
+                                                        },
+                                                        {
+                                                                    "email": "matthew.peck@marketrocket.co.uk",
+                                                                    "totalTimeMinutes": 0,
+                                                                    "events": 21,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {}
+                                                        }
+                                            ]
+                                },
+                                {
+                                            "name": "enflet.io",
+                                            "users": [
+                                                        {
+                                                                    "email": "ryan@enflet.io",
+                                                                    "totalTimeMinutes": 66,
+                                                                    "events": 469,
+                                                                    "flows": {
+                                                                                "started": 1,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {
+                                                                                "2026-01-29": {
+                                                                                            "timeMinutes": 5.9,
+                                                                                            "events": 36
+                                                                                },
+                                                                                "2026-02-02": {
+                                                                                            "timeMinutes": 5.9,
+                                                                                            "events": 36
+                                                                                },
+                                                                                "2026-02-03": {
+                                                                                            "timeMinutes": 18.4,
+                                                                                            "events": 113
+                                                                                },
+                                                                                "2026-02-05": {
+                                                                                            "timeMinutes": 12.7,
+                                                                                            "events": 78
+                                                                                },
+                                                                                "2026-02-07": {
+                                                                                            "timeMinutes": 4.6,
+                                                                                            "events": 28
+                                                                                },
+                                                                                "2026-02-09": {
+                                                                                            "timeMinutes": 9.5,
+                                                                                            "events": 58
+                                                                                },
+                                                                                "2026-02-10": {
+                                                                                            "timeMinutes": 9.1,
+                                                                                            "events": 56
+                                                                                }
+                                                                    }
+                                                        },
+                                                        {
+                                                                    "email": "ryan@enflet.io",
+                                                                    "totalTimeMinutes": 0,
+                                                                    "events": 0,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {}
+                                                        }
+                                            ]
+                                },
+                                {
+                                            "name": "myshoespot.com",
+                                            "users": [
+                                                        {
+                                                                    "email": "perent@myshoespot.com",
+                                                                    "totalTimeMinutes": 239,
+                                                                    "events": 292,
+                                                                    "flows": {
+                                                                                "started": 3,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {
+                                                                                "2026-01-14": {
+                                                                                            "timeMinutes": 3.2,
+                                                                                            "events": 3
+                                                                                },
+                                                                                "2026-01-15": {
+                                                                                            "timeMinutes": 3.2,
+                                                                                            "events": 3
+                                                                                },
+                                                                                "2026-01-22": {
+                                                                                            "timeMinutes": 21.2,
+                                                                                            "events": 20
+                                                                                },
+                                                                                "2026-01-26": {
+                                                                                            "timeMinutes": 37.2,
+                                                                                            "events": 35
+                                                                                },
+                                                                                "2026-01-29": {
+                                                                                            "timeMinutes": 94.5,
+                                                                                            "events": 89
+                                                                                },
+                                                                                "2026-02-10": {
+                                                                                            "timeMinutes": 70.1,
+                                                                                            "events": 66
+                                                                                },
+                                                                                "2026-02-11": {
+                                                                                            "timeMinutes": 9.6,
+                                                                                            "events": 9
+                                                                                }
+                                                                    }
+                                                        },
+                                                        {
+                                                                    "email": "perent@myshoespot.com",
+                                                                    "totalTimeMinutes": 0,
+                                                                    "events": 0,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {}
+                                                        }
+                                            ]
+                                },
+                                {
+                                            "name": "earthchimp.com",
+                                            "users": [
+                                                        {
+                                                                    "email": "dave@earthchimp.com",
+                                                                    "totalTimeMinutes": 1,
+                                                                    "events": 188,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {
+                                                                                "2026-01-26": {
+                                                                                            "timeMinutes": 0.6,
+                                                                                            "events": 110
+                                                                                },
+                                                                                "2026-01-27": {
+                                                                                            "timeMinutes": 0.4,
+                                                                                            "events": 78
+                                                                                }
+                                                                    }
+                                                        }
+                                            ]
+                                },
+                                {
+                                            "name": "aimoh.com",
+                                            "users": [
+                                                        {
+                                                                    "email": "chs@aimoh.com",
+                                                                    "totalTimeMinutes": 25,
+                                                                    "events": 133,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {
+                                                                                "2026-01-13": {
+                                                                                            "timeMinutes": 5.6,
+                                                                                            "events": 29
+                                                                                },
+                                                                                "2026-01-15": {
+                                                                                            "timeMinutes": 0.5,
+                                                                                            "events": 2
+                                                                                },
+                                                                                "2026-01-28": {
+                                                                                            "timeMinutes": 4.0,
+                                                                                            "events": 21
+                                                                                },
+                                                                                "2026-01-29": {
+                                                                                            "timeMinutes": 4.0,
+                                                                                            "events": 21
+                                                                                },
+                                                                                "2026-02-02": {
+                                                                                            "timeMinutes": 3.8,
+                                                                                            "events": 20
+                                                                                },
+                                                                                "2026-02-03": {
+                                                                                            "timeMinutes": 3.8,
+                                                                                            "events": 20
+                                                                                },
+                                                                                "2026-02-04": {
+                                                                                            "timeMinutes": 3.3,
+                                                                                            "events": 17
+                                                                                }
+                                                                    }
+                                                        },
+                                                        {
+                                                                    "email": "chs@aimoh.com",
+                                                                    "totalTimeMinutes": 0,
+                                                                    "events": 11,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {}
+                                                        }
+                                            ]
+                                },
+                                {
+                                            "name": "colormorelines.com",
+                                            "users": [
+                                                        {
+                                                                    "email": "ricardo@colormorelines.com",
+                                                                    "totalTimeMinutes": 18,
+                                                                    "events": 83,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {
+                                                                                "2026-01-14": {
+                                                                                            "timeMinutes": 18.0,
+                                                                                            "events": 83
+                                                                                }
+                                                                    }
+                                                        }
+                                            ]
+                                },
+                                {
+                                            "name": "doublewoodsupplements.com",
+                                            "users": [
+                                                        {
+                                                                    "email": "dhunnewell@doublewoodsupplements.com",
+                                                                    "totalTimeMinutes": 2,
+                                                                    "events": 68,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {
+                                                                                "2025-12-18": {
+                                                                                            "timeMinutes": 0.0,
+                                                                                            "events": 1
+                                                                                },
+                                                                                "2025-12-23": {
+                                                                                            "timeMinutes": 0.2,
+                                                                                            "events": 7
+                                                                                },
+                                                                                "2026-01-15": {
+                                                                                            "timeMinutes": 0.1,
+                                                                                            "events": 3
+                                                                                },
+                                                                                "2026-01-19": {
+                                                                                            "timeMinutes": 0.1,
+                                                                                            "events": 3
+                                                                                },
+                                                                                "2026-02-01": {
+                                                                                            "timeMinutes": 0.8,
+                                                                                            "events": 27
+                                                                                },
+                                                                                "2026-02-07": {
+                                                                                            "timeMinutes": 0.8,
+                                                                                            "events": 27
+                                                                                }
+                                                                    }
+                                                        },
+                                                        {
+                                                                    "email": "dhunnewell@doublewoodsupplements.com",
+                                                                    "totalTimeMinutes": 0,
+                                                                    "events": 0,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {}
+                                                        }
+                                            ]
+                                },
+                                {
+                                            "name": "accelobrand.com",
+                                            "users": [
+                                                        {
+                                                                    "email": "hello@accelobrand.com",
+                                                                    "totalTimeMinutes": 3,
+                                                                    "events": 30,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {
+                                                                                "2025-12-30": {
+                                                                                            "timeMinutes": 2.0,
+                                                                                            "events": 20
+                                                                                },
+                                                                                "2026-01-01": {
+                                                                                            "timeMinutes": 0.2,
+                                                                                            "events": 1
+                                                                                },
+                                                                                "2026-01-13": {
+                                                                                            "timeMinutes": 0.6,
+                                                                                            "events": 6
+                                                                                },
+                                                                                "2026-01-19": {
+                                                                                            "timeMinutes": 0.2,
+                                                                                            "events": 2
+                                                                                }
+                                                                    }
+                                                        },
+                                                        {
+                                                                    "email": "hello@accelobrand.com",
+                                                                    "totalTimeMinutes": 0,
+                                                                    "events": 10,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {}
+                                                        }
+                                            ]
+                                },
+                                {
+                                            "name": "lifeprofitness.com",
+                                            "users": [
+                                                        {
+                                                                    "email": "Tehsin@lifeprofitness.com",
+                                                                    "totalTimeMinutes": 7,
+                                                                    "events": 13,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {
+                                                                                "2025-12-19": {
+                                                                                            "timeMinutes": 5.9,
+                                                                                            "events": 10
+                                                                                },
+                                                                                "2026-01-05": {
+                                                                                            "timeMinutes": 1.1,
+                                                                                            "events": 2
+                                                                                }
+                                                                    }
+                                                        },
+                                                        {
+                                                                    "email": "Tehsin@lifeprofitness.com",
+                                                                    "totalTimeMinutes": 0,
+                                                                    "events": 25,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {}
+                                                        }
+                                            ]
+                                },
+                                {
+                                            "name": "phizz.co",
+                                            "users": [
+                                                        {
+                                                                    "email": "tom.devonshire@phizz.co",
+                                                                    "totalTimeMinutes": 173,
+                                                                    "events": 12,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {
+                                                                                "2025-12-17": {
+                                                                                            "timeMinutes": 173.0,
+                                                                                            "events": 12
+                                                                                }
+                                                                    }
+                                                        },
+                                                        {
+                                                                    "email": "tom.devonshire@phizz.co",
+                                                                    "totalTimeMinutes": 0,
+                                                                    "events": 15,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {}
+                                                        }
+                                            ]
+                                },
+                                {
+                                            "name": "picsilsport.com",
+                                            "users": [
+                                                        {
+                                                                    "email": "michele.gaglia@picsilsport.com",
+                                                                    "totalTimeMinutes": 0,
+                                                                    "events": 6,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {}
+                                                        },
+                                                        {
+                                                                    "email": "michele.gaglia@picsilsport.com",
+                                                                    "totalTimeMinutes": 0,
+                                                                    "events": 11,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {}
+                                                        }
+                                            ]
+                                },
+                                {
+                                            "name": "rdyparts.com",
+                                            "users": [
+                                                        {
+                                                                    "email": "info@rdyparts.com",
+                                                                    "totalTimeMinutes": 1,
+                                                                    "events": 16,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {
+                                                                                "2025-12-15": {
+                                                                                            "timeMinutes": 0.1,
+                                                                                            "events": 1
+                                                                                },
+                                                                                "2025-12-16": {
+                                                                                            "timeMinutes": 0.1,
+                                                                                            "events": 1
+                                                                                },
+                                                                                "2026-01-11": {
+                                                                                            "timeMinutes": 0.6,
+                                                                                            "events": 10
+                                                                                },
+                                                                                "2026-01-13": {
+                                                                                            "timeMinutes": 0.2,
+                                                                                            "events": 4
+                                                                                }
+                                                                    }
+                                                        }
+                                            ]
+                                },
+                                {
+                                            "name": "scarfixplus.com",
+                                            "users": [
+                                                        {
+                                                                    "email": "robert@scarfixplus.com",
+                                                                    "totalTimeMinutes": 0,
+                                                                    "events": 3,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {}
+                                                        },
+                                                        {
+                                                                    "email": "robert@scarfixplus.com",
+                                                                    "totalTimeMinutes": 2,
+                                                                    "events": 10,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {
+                                                                                "2025-12-17": {
+                                                                                            "timeMinutes": 2.0,
+                                                                                            "events": 10
+                                                                                }
+                                                                    }
+                                                        }
+                                            ]
+                                },
+                                {
+                                            "name": "ukr.net",
+                                            "users": [
+                                                        {
+                                                                    "email": "podyakova@ukr.net",
+                                                                    "totalTimeMinutes": 0,
+                                                                    "events": 2,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {}
+                                                        },
+                                                        {
+                                                                    "email": "podyakova@ukr.net",
+                                                                    "totalTimeMinutes": 0,
+                                                                    "events": 10,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {}
+                                                        }
+                                            ]
+                                },
+                                {
+                                            "name": "estorefactory.net",
+                                            "users": [
+                                                        {
+                                                                    "email": "krishna@estorefactory.net",
+                                                                    "totalTimeMinutes": 0,
+                                                                    "events": 7,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {}
+                                                        }
+                                            ]
+                                },
+                                {
+                                            "name": "momo-lifestyle.com",
+                                            "users": [
+                                                        {
+                                                                    "email": "info@momo-lifestyle.com",
+                                                                    "totalTimeMinutes": 0,
+                                                                    "events": 6,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {}
+                                                        }
+                                            ]
+                                },
+                                {
+                                            "name": "specialbreed.co",
+                                            "users": [
+                                                        {
+                                                                    "email": "hello@specialbreed.co",
+                                                                    "totalTimeMinutes": 1,
+                                                                    "events": 5,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {
+                                                                                "2025-12-18": {
+                                                                                            "timeMinutes": 1.0,
+                                                                                            "events": 5
+                                                                                }
+                                                                    }
+                                                        }
+                                            ]
+                                },
+                                {
+                                            "name": "jdohea.com",
+                                            "users": [
+                                                        {
+                                                                    "email": "me@jdohea.com",
+                                                                    "totalTimeMinutes": 0,
+                                                                    "events": 0,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {}
+                                                        },
+                                                        {
+                                                                    "email": "me@jdohea.com",
+                                                                    "totalTimeMinutes": 0,
+                                                                    "events": 0,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {}
+                                                        },
+                                                        {
+                                                                    "email": "me@jdohea.com",
+                                                                    "totalTimeMinutes": 0,
+                                                                    "events": 0,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {}
+                                                        },
+                                                        {
+                                                                    "email": "me@jdohea.com",
+                                                                    "totalTimeMinutes": 0,
+                                                                    "events": 0,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {}
+                                                        },
+                                                        {
+                                                                    "email": "me@jdohea.com",
+                                                                    "totalTimeMinutes": 0,
+                                                                    "events": 0,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {}
+                                                        },
+                                                        {
+                                                                    "email": "me@jdohea.com",
+                                                                    "totalTimeMinutes": 0,
+                                                                    "events": 0,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {}
+                                                        },
+                                                        {
+                                                                    "email": "me@jdohea.com",
+                                                                    "totalTimeMinutes": 0,
+                                                                    "events": 0,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {}
+                                                        },
+                                                        {
+                                                                    "email": "me@jdohea.com",
+                                                                    "totalTimeMinutes": 0,
+                                                                    "events": 0,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {}
+                                                        }
+                                            ]
+                                },
+                                {
+                                            "name": "jarvioapp.com",
+                                            "users": [
+                                                        {
+                                                                    "email": "connor@jarvioapp.com",
+                                                                    "totalTimeMinutes": 0,
+                                                                    "events": 0,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {}
+                                                        }
+                                            ]
+                                },
+                                {
+                                            "name": "nomadz.com",
+                                            "users": [
+                                                        {
+                                                                    "email": "caleb@nomadz.com",
+                                                                    "totalTimeMinutes": 0,
+                                                                    "events": 0,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {}
+                                                        },
+                                                        {
+                                                                    "email": "caleb@nomadz.com",
+                                                                    "totalTimeMinutes": 0,
+                                                                    "events": 0,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {}
+                                                        }
+                                            ]
+                                },
+                                {
+                                            "name": "papercrush.de",
+                                            "users": [
+                                                        {
+                                                                    "email": "patrick@papercrush.de",
+                                                                    "totalTimeMinutes": 0,
+                                                                    "events": 0,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {}
+                                                        },
+                                                        {
+                                                                    "email": "patrick@papercrush.de",
+                                                                    "totalTimeMinutes": 0,
+                                                                    "events": 0,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {}
+                                                        }
+                                            ]
+                                },
+                                {
+                                            "name": "amerify.co",
+                                            "users": [
+                                                        {
+                                                                    "email": "support+ue@amerify.co",
+                                                                    "totalTimeMinutes": 0,
+                                                                    "events": 0,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {}
+                                                        }
+                                            ]
+                                },
+                                {
+                                            "name": "dmoose.com",
+                                            "users": [
+                                                        {
+                                                                    "email": "amazon@dmoose.com",
+                                                                    "totalTimeMinutes": 0,
+                                                                    "events": 0,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {}
+                                                        },
+                                                        {
+                                                                    "email": "amazon@dmoose.com",
+                                                                    "totalTimeMinutes": 0,
+                                                                    "events": 0,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {}
+                                                        }
+                                            ]
+                                },
+                                {
+                                            "name": "mozmail.com",
+                                            "users": [
+                                                        {
+                                                                    "email": "3xrddpjsr@mozmail.com",
+                                                                    "totalTimeMinutes": 0,
+                                                                    "events": 0,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {}
+                                                        },
+                                                        {
+                                                                    "email": "3xrddpjsr@mozmail.com",
+                                                                    "totalTimeMinutes": 0,
+                                                                    "events": 0,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {}
+                                                        }
+                                            ]
+                                },
+                                {
+                                            "name": "brandlaunchhq.com",
+                                            "users": [
+                                                        {
+                                                                    "email": "connor@brandlaunchhq.com",
+                                                                    "totalTimeMinutes": 0,
+                                                                    "events": 0,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {}
+                                                        }
+                                            ]
+                                },
+                                {
+                                            "name": "supersonic-brands.com",
+                                            "users": [
+                                                        {
+                                                                    "email": "info@supersonic-brands.com",
+                                                                    "totalTimeMinutes": 0,
+                                                                    "events": 0,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {}
+                                                        },
+                                                        {
+                                                                    "email": "info@supersonic-brands.com",
+                                                                    "totalTimeMinutes": 0,
+                                                                    "events": 0,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {}
+                                                        }
+                                            ]
+                                },
+                                {
+                                            "name": "ejam.com",
+                                            "users": [
+                                                        {
+                                                                    "email": "ss@ejam.com",
+                                                                    "totalTimeMinutes": 0,
+                                                                    "events": 0,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {}
+                                                        }
+                                            ]
+                                },
+                                {
+                                            "name": "ebrands.com",
+                                            "users": [
+                                                        {
+                                                                    "email": "ed.snelson@ebrands.com",
+                                                                    "totalTimeMinutes": 0,
+                                                                    "events": 0,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {}
+                                                        }
+                                            ]
+                                },
+                                {
+                                            "name": "jswmediainc.com",
+                                            "users": [
+                                                        {
+                                                                    "email": "jeff@jswmediainc.com",
+                                                                    "totalTimeMinutes": 0,
+                                                                    "events": 0,
+                                                                    "flows": {
+                                                                                "started": 0,
+                                                                                "completed": 0,
+                                                                                "failed": 0
+                                                                    },
+                                                                    "dailyData": {}
+                                                        }
+                                            ]
+                                }
+                    ],
+                    "startDate": "2025-12-14",
+                    "endDate": "2026-02-12"
+        };
+        
+        // Data generated from: customer_data.json
+        // Report date: 2026-02-12T21:57:30.975632
+        // Total customers: 30;
+        
+        // Data generated from: customer_data.json
+        // Report date: 2026-02-12T21:46:50.627721
+        // Total customers: 30
+
+        // STATE
+        let currentView = 'organization';  // 'organization' or 'user'
+        let selectedOrganization = null;
+        let currentFilter = 'all';
+        let currentSort = 'time-desc';
+        let selectedStartDate = null;
+        let selectedEndDate = null;
+        let currentPresetDays = 0;
+        let processedData = [];
+        let filteredData = [];
+        let charts = {};
+
+        // UTILITY FUNCTIONS
+        function formatDate(date) {
+            return date.toISOString().split('T')[0];
+        }
+
+        function parseDate(dateStr) {
+            return new Date(dateStr + 'T00:00:00');
+        }
+
+        function formatTime(minutes) {
+            minutes = Math.round(minutes);
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            if (hours > 0) {
+                return `${hours}h ${mins}m`;
+            }
+            return `${mins}m`;
+        }
+
+        function formatNumber(num) {
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+            return num.toString();
+        }
+
+        function isGenericDomain(domain) {
+            return GENERIC_DOMAINS.includes(domain.toLowerCase());
+        }
+
+        // DATA PROCESSING
+        function initializeDateRange() {
+            const endDate = TIME_SERIES_DATA.endDate ? parseDate(TIME_SERIES_DATA.endDate) : new Date();
+            const startDate = TIME_SERIES_DATA.startDate ? parseDate(TIME_SERIES_DATA.startDate) : new Date(endDate);
+            if (!TIME_SERIES_DATA.startDate) startDate.setDate(startDate.getDate() - 7);
+            
+            selectedStartDate = formatDate(startDate);
+            selectedEndDate = formatDate(endDate);
+            currentPresetDays = 0; // 0 = All Time
+        }
+
+        function processData() {
+            processedData = [];
+            
+            if (currentView === 'organization') {
+                // Organization-level aggregation
+                TIME_SERIES_DATA.organizations
+                    .filter(org => !isGenericDomain(org.name))
+                    .forEach(org => {
+                        let totalTime = 0;
+                        let totalEvents = 0;
+                        let flowsStarted = 0;
+                        let flowsCompleted = 0;
+                        let flowsFailed = 0;
+                        const users = [];
+                        
+                        org.users.forEach(user => {
+                            let userTime = 0;
+                            let userEvents = 0;
+                            
+                            if (currentPresetDays === 0) {
+                                // All Time: use stored totals (dailyData may be incomplete)
+                                userTime = user.totalTimeMinutes || 0;
+                                userEvents = user.events || 0;
+                            } else {
+                                // Filter by date range using dailyData
+                                Object.keys(user.dailyData)
+                                    .filter(date => date >= selectedStartDate && date <= selectedEndDate)
+                                    .forEach(date => {
+                                        const dayData = user.dailyData[date];
+                                        userTime += dayData.timeMinutes || 0;
+                                        userEvents += dayData.events || 0;
+                                    });
+                            }
+                            
+                            totalTime += userTime;
+                            totalEvents += userEvents;
+                            flowsStarted += user.flows?.started || 0;
+                            flowsCompleted += user.flows?.completed || 0;
+                            flowsFailed += user.flows?.failed || 0;
+                            
+                            users.push({
+                                email: user.email,
+                                timeMinutes: userTime,
+                                events: userEvents,
+                                flows: user.flows
+                            });
+                        });
+                        
+                        processedData.push({
+                            type: 'organization',
+                            name: org.name,
+                            timeMinutes: totalTime,
+                            events: totalEvents,
+                            userCount: org.users.length,
+                            flows: {
+                                started: flowsStarted,
+                                completed: flowsCompleted,
+                                failed: flowsFailed
+                            },
+                            users: users.sort((a, b) => b.timeMinutes - a.timeMinutes)
+                        });
+                    });
+            } else {
+                // User-level view
+                TIME_SERIES_DATA.organizations
+                    .filter(org => !isGenericDomain(org.name))
+                    .forEach(org => {
+                        org.users.forEach(user => {
+                            let userTime = 0;
+                            let userEvents = 0;
+                            
+                            if (currentPresetDays === 0) {
+                                userTime = user.totalTimeMinutes || 0;
+                                userEvents = user.events || 0;
+                            } else {
+                                Object.keys(user.dailyData)
+                                    .filter(date => date >= selectedStartDate && date <= selectedEndDate)
+                                    .forEach(date => {
+                                        const dayData = user.dailyData[date];
+                                        userTime += dayData.timeMinutes || 0;
+                                        userEvents += dayData.events || 0;
+                                    });
+                            }
+                            
+                            processedData.push({
+                                type: 'user',
+                                email: user.email,
+                                organization: org.name,
+                                timeMinutes: userTime,
+                                events: userEvents,
+                                flows: user.flows
+                            });
+                        });
+                    });
+            }
+            
+            filteredData = [...processedData];
+            applySorting();
+        }
+
+        function applyFilters() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            
+            filteredData = processedData.filter(entity => {
+                // Search filter
+                const searchTarget = currentView === 'organization' ? entity.name : entity.email;
+                if (!searchTarget.toLowerCase().includes(searchTerm)) {
+                    return false;
+                }
+                
+                // Category filter
+                switch(currentFilter) {
+                    case 'active':
+                        return entity.events > 0;
+                    case 'high-time':
+                        return entity.timeMinutes > 60;  // > 1 hour
+                    default:
+                        return true;
+                }
+            });
+            
+            applySorting();
+            renderEntities();
+            updateSummaryStats();
+        }
+
+        function applySorting() {
+            switch(currentSort) {
+                case 'time-desc':
+                    filteredData.sort((a, b) => b.timeMinutes - a.timeMinutes);
+                    break;
+                case 'time-asc':
+                    filteredData.sort((a, b) => a.timeMinutes - b.timeMinutes);
+                    break;
+                case 'events-desc':
+                    filteredData.sort((a, b) => b.events - a.events);
+                    break;
+                case 'name-asc':
+                    const getName = (e) => currentView === 'organization' ? e.name : e.email;
+                    filteredData.sort((a, b) => getName(a).localeCompare(getName(b)));
+                    break;
+            }
+        }
+
+        function updateSummaryStats() {
+            const totalEntities = filteredData.length;
+            const totalUsers = currentView === 'organization' 
+                ? filteredData.reduce((sum, e) => sum + e.userCount, 0)
+                : filteredData.length;
+            const totalTime = filteredData.reduce((sum, e) => sum + e.timeMinutes, 0);
+            const avgTime = totalEntities > 0 ? Math.round(totalTime / totalEntities) : 0;
+            const totalEvents = filteredData.reduce((sum, e) => sum + e.events, 0);
+            const totalFlows = filteredData.reduce((sum, e) => 
+                e.flows ? sum + e.flows.started : sum, 0);
+            
+            document.getElementById('total-entities').textContent = totalEntities;
+            document.getElementById('entity-label').textContent = 
+                currentView === 'organization' ? 'Organizations' : 'Users';
+            document.getElementById('total-users').textContent = totalUsers;
+            document.getElementById('total-time').textContent = formatTime(totalTime);
+            document.getElementById('avg-time').textContent = formatTime(avgTime);
+            document.getElementById('total-events').textContent = formatNumber(totalEvents);
+            document.getElementById('total-flows').textContent = formatNumber(totalFlows);
+            
+            // Update date range display
+            const startDateObj = parseDate(selectedStartDate);
+            const endDateObj = parseDate(selectedEndDate);
+            const startStr = startDateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const endStr = endDateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            document.getElementById('date-range-display').textContent = 
+                `Time Tracking & User Analytics | ${startStr} - ${endStr}`;
+        }
+
+        function renderEntities() {
+            const container = document.getElementById('entities-container');
+            
+            if (filteredData.length === 0) {
+                container.innerHTML = `
+                    <div class="no-results">
+                        <div style="font-size: 4em; margin-bottom: 20px;">🔍</div>
+                        <div>No results found</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = filteredData.map(entity => createEntityCard(entity)).join('');
+            
+            // Add event listeners
+            document.querySelectorAll('.drill-down-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const orgName = this.dataset.org;
+                    drillDownToOrganization(orgName);
+                });
+            });
+        }
+
+        function createEntityCard(entity) {
+            if (currentView === 'organization') {
+                return createOrganizationCard(entity);
+            } else {
+                return createUserCard(entity);
+            }
+        }
+
+        function createOrganizationCard(org) {
+            const isHighUsage = org.timeMinutes > 180;  // > 3 hours
+            const headerClass = isHighUsage ? 'entity-header high-usage' : 'entity-header';
+            
+            return `
+                <div class="entity-card">
+                    <div class="${headerClass}">
+                        <div class="time-badge">${formatTime(org.timeMinutes)}</div>
+                        <h3>${org.name}</h3>
+                        <div class="entity-metrics">
+                            <div class="metric">
+                                <span class="metric-value">${org.userCount}</span>
+                                <span class="metric-label">Users</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-value">${formatNumber(org.events)}</span>
+                                <span class="metric-label">Events</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-value">${formatTime(org.timeMinutes)}</span>
+                                <span class="metric-label">Total Time</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-value">${org.flows.started}</span>
+                                <span class="metric-label">Flows</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="entity-body">
+                        <div class="time-display">
+                            <div class="time-value">${formatTime(org.timeMinutes)}</div>
+                            <div class="time-label">Total Time Spent</div>
+                            <div class="time-breakdown">
+                                <div>Avg per user: ${formatTime(Math.round(org.timeMinutes / org.userCount))}</div>
+                                <div>Events: ${formatNumber(org.events)}</div>
+                            </div>
+                        </div>
+                        
+                        ${org.flows.started > 0 ? `
+                        <div class="flow-analytics">
+                            <h4>📊 Flow Analytics</h4>
+                            <div class="flow-stats">
+                                <div class="flow-stat"><strong>Started:</strong> ${org.flows.started}</div>
+                                <div class="flow-stat"><strong>Completed:</strong> ${org.flows.completed}</div>
+                                <div class="flow-stat"><strong>Failed:</strong> ${org.flows.failed}</div>
+                                <div class="flow-stat"><strong>Success:</strong> ${((org.flows.completed / org.flows.started) * 100).toFixed(1)}%</div>
+                            </div>
+                        </div>
+                        ` : ''}
+                        
+                        <div class="user-list">
+                            <h4>👥 Users (${org.users.length})</h4>
+                            ${org.users.map(user => `
+                                <div class="user-item">
+                                    <div class="user-info">
+                                        <div class="user-email">${user.email}</div>
+                                        <div class="user-stats">${formatNumber(user.events)} events</div>
+                                    </div>
+                                    <div class="user-time">${formatTime(user.timeMinutes)}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        <button class="drill-down-btn" data-org="${org.name}">
+                            View User Details →
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createUserCard(user) {
+            return `
+                <div class="entity-card">
+                    <div class="entity-header user-level">
+                        <div class="time-badge">${formatTime(user.timeMinutes)}</div>
+                        <h3>${user.email}</h3>
+                        <div class="email">${user.organization}</div>
+                        <div class="entity-metrics">
+                            <div class="metric">
+                                <span class="metric-value">${formatTime(user.timeMinutes)}</span>
+                                <span class="metric-label">Total Time</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-value">${formatNumber(user.events)}</span>
+                                <span class="metric-label">Events</span>
+                            </div>
+                            ${user.flows ? `
+                            <div class="metric">
+                                <span class="metric-value">${user.flows.started}</span>
+                                <span class="metric-label">Flows Started</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-value">${user.flows.completed}</span>
+                                <span class="metric-label">Completed</span>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                    <div class="entity-body">
+                        <div class="time-display">
+                            <div class="time-value">${formatTime(user.timeMinutes)}</div>
+                            <div class="time-label">Time Spent</div>
+                            <div class="time-breakdown">
+                                <div>Events: ${formatNumber(user.events)}</div>
+                                ${user.flows && user.flows.started > 0 ? `<div>Success: ${((user.flows.completed / user.flows.started) * 100).toFixed(1)}%</div>` : '<div>No flows</div>'}
+                            </div>
+                        </div>
+                        
+                        ${user.flows && user.flows.started > 0 ? `
+                        <div class="flow-analytics">
+                            <h4>📊 Flow Analytics</h4>
+                            <div class="flow-stats">
+                                <div class="flow-stat"><strong>Started:</strong> ${user.flows.started}</div>
+                                <div class="flow-stat"><strong>Completed:</strong> ${user.flows.completed}</div>
+                                <div class="flow-stat"><strong>Failed:</strong> ${user.flows.failed}</div>
+                            </div>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function drillDownToOrganization(orgName) {
+            selectedOrganization = orgName;
+            currentView = 'user';
+            
+            // Filter to show only users from this org
+            const org = TIME_SERIES_DATA.organizations.find(o => o.name === orgName);
+            if (!org) return;
+            
+            processedData = [];
+            org.users.forEach(user => {
+                let userTime = 0;
+                let userEvents = 0;
+                
+                Object.keys(user.dailyData)
+                    .filter(date => date >= selectedStartDate && date <= selectedEndDate)
+                    .forEach(date => {
+                        const dayData = user.dailyData[date];
+                        userTime += dayData.timeMinutes || 0;
+                        userEvents += dayData.events || 0;
+                    });
+                
+                processedData.push({
+                    type: 'user',
+                    email: user.email,
+                    organization: org.name,
+                    timeMinutes: userTime,
+                    events: userEvents,
+                    flows: user.flows
+                });
+            });
+            
+            filteredData = [...processedData];
+            applySorting();
+            
+            // Show back button
+            document.getElementById('back-button-container').innerHTML = `
+                <div style="padding: 20px 40px;">
+                    <button class="back-btn" onclick="backToOrganizationView()">← Back to Organization View</button>
+                    <h2 style="color: #495057; margin-top: 10px;">Users in ${orgName}</h2>
+                </div>
+            `;
+            
+            renderEntities();
+            updateSummaryStats();
+            updateCharts();
+        }
+
+        function backToOrganizationView() {
+            selectedOrganization = null;
+            currentView = 'organization';
+            document.getElementById('back-button-container').innerHTML = '';
+            
+            // Update view buttons
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.view === 'organization') {
+                    btn.classList.add('active');
+                }
+            });
+            
+            processData();
+            applyFilters();
+            updateCharts();
+        }
+
+        function updateDateRange(days) {
+            currentPresetDays = days;
+            if (days === 0) {
+                selectedStartDate = TIME_SERIES_DATA.startDate;
+                selectedEndDate = TIME_SERIES_DATA.endDate;
+            } else {
+                const endDate = parseDate(TIME_SERIES_DATA.endDate);
+                const startDate = new Date(endDate);
+                startDate.setDate(startDate.getDate() - days + 1);
+                selectedStartDate = formatDate(startDate);
+                selectedEndDate = TIME_SERIES_DATA.endDate;
+            }
+            
+            refreshDashboard();
+        }
+
+        function refreshDashboard() {
+            const loadingOverlay = document.getElementById('loading-overlay');
+            loadingOverlay.classList.add('visible');
+            
+            setTimeout(() => {
+                processData();
+                applyFilters();
+                updateCharts();
+                loadingOverlay.classList.remove('visible');
+            }, 300);
+        }
+
+        function updateCharts() {
+            // Update the usage overview chart
+            updateUsageChart();
+            
+            // Destroy existing charts
+            Object.values(charts).forEach(chart => chart?.destroy());
+            charts = {};
+            
+            // Time spent chart
+            const topByTime = [...processedData]
+                .sort((a, b) => b.timeMinutes - a.timeMinutes)
+                .slice(0, 10);
+            
+            charts.topTime = new Chart(document.getElementById('top-time-chart'), {
+                type: 'bar',
+                data: {
+                    labels: topByTime.map(e => currentView === 'organization' ? e.name : e.email),
+                    datasets: [{
+                        label: 'Time (minutes)',
+                        data: topByTime.map(e => e.timeMinutes),
+                        backgroundColor: 'rgba(40, 167, 69, 0.8)',
+                        borderColor: 'rgba(40, 167, 69, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => formatTime(context.parsed.y)
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: (value) => formatTime(value)
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Top by events
+            const topByEvents = [...processedData]
+                .sort((a, b) => b.events - a.events)
+                .slice(0, 10);
+            
+            charts.topEvents = new Chart(document.getElementById('top-events-chart'), {
+                type: 'bar',
+                data: {
+                    labels: topByEvents.map(e => currentView === 'organization' ? e.name : e.email),
+                    datasets: [{
+                        label: 'Events',
+                        data: topByEvents.map(e => e.events),
+                        backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => formatNumber(context.parsed.y) + ' events'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: (value) => formatNumber(value)
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Time chart (timeline) - aggregate daily data by date
+            const dailyAgg = {};
+            TIME_SERIES_DATA.organizations.forEach(org => {
+                org.users.forEach(user => {
+                    Object.entries(user.dailyData || {}).forEach(([date, data]) => {
+                        if (date >= selectedStartDate && date <= selectedEndDate) {
+                            if (!dailyAgg[date]) dailyAgg[date] = { time: 0, events: 0 };
+                            dailyAgg[date].time += data.timeMinutes || 0;
+                            dailyAgg[date].events += data.events || 0;
+                        }
+                    });
+                });
+            });
+            const sortedDates = Object.keys(dailyAgg).sort();
+            const dateLabels = sortedDates.map(d => {
+                const dt = parseDate(d);
+                return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            });
+            
+            charts.timeChart = new Chart(document.getElementById('time-chart'), {
+                type: 'line',
+                data: {
+                    labels: dateLabels,
+                    datasets: [{
+                        label: 'Time Spent (minutes)',
+                        data: sortedDates.map(d => dailyAgg[d].time),
+                        borderColor: '#28a745',
+                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => formatTime(context.parsed.y)
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: (value) => formatTime(value)
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // USAGE OVERVIEW CHART
+        let currentMetric = 'time';
+        let usageChart = null;
+
+        const metricConfig = {
+            time: {
+                label: 'Time Spent (minutes)',
+                color: '#28a745',
+                bgColor: 'rgba(40, 167, 69, 0.75)',
+                borderColor: 'rgba(40, 167, 69, 1)',
+                getValue: (org) => org.timeMinutes,
+                formatTooltip: (v) => formatTime(v),
+                formatTick: (v) => formatTime(v)
+            },
+            events: {
+                label: 'Events',
+                color: '#667eea',
+                bgColor: 'rgba(102, 126, 234, 0.75)',
+                borderColor: 'rgba(102, 126, 234, 1)',
+                getValue: (org) => org.events,
+                formatTooltip: (v) => formatNumber(v) + ' events',
+                formatTick: (v) => formatNumber(v)
+            },
+            flowsStarted: {
+                label: 'Flows Started',
+                color: '#fd7e14',
+                bgColor: 'rgba(253, 126, 20, 0.75)',
+                borderColor: 'rgba(253, 126, 20, 1)',
+                getValue: (org) => org.flows?.started || 0,
+                formatTooltip: (v) => v + ' flows',
+                formatTick: (v) => v.toString()
+            },
+            flowsCompleted: {
+                label: 'Flows Completed',
+                color: '#20c997',
+                bgColor: 'rgba(32, 201, 151, 0.75)',
+                borderColor: 'rgba(32, 201, 151, 1)',
+                getValue: (org) => org.flows?.completed || 0,
+                formatTooltip: (v) => v + ' completed',
+                formatTick: (v) => v.toString()
+            },
+            successRate: {
+                label: 'Success Rate (%)',
+                color: '#764ba2',
+                bgColor: 'rgba(118, 75, 162, 0.75)',
+                borderColor: 'rgba(118, 75, 162, 1)',
+                getValue: (org) => {
+                    const s = org.flows?.started || 0;
+                    return s > 0 ? ((org.flows?.completed || 0) / s) * 100 : 0;
+                },
+                formatTooltip: (v) => v.toFixed(1) + '%',
+                formatTick: (v) => v + '%'
+            }
+        };
+
+        // Professional color palette for org lines
+        const ORG_COLORS = [
+            '#667eea', '#28a745', '#fd7e14', '#dc3545', '#20c997',
+            '#6f42c1', '#17a2b8', '#e83e8c', '#ffc107', '#6610f2',
+            '#007bff', '#28a745', '#795548', '#009688', '#ff5722'
+        ];
+
+        function getDateRange() {
+            const start = parseDate(selectedStartDate);
+            const end = parseDate(selectedEndDate);
+            const dates = [];
+            const d = new Date(start);
+            while (d <= end) {
+                dates.push(formatDate(d));
+                d.setDate(d.getDate() + 1);
+            }
+            return dates;
+        }
+
+        function updateUsageChart() {
+            if (usageChart) usageChart.destroy();
+            
+            const cfg = metricConfig[currentMetric];
+            const allDates = getDateRange();
+
+            // Build per-org daily aggregates
+            const orgDailyMap = {}; // orgName -> { date -> value }
+            const orgTotals = {};   // orgName -> total value (for sorting/filtering)
+
+            const orgs = TIME_SERIES_DATA.organizations.filter(o => !isGenericDomain(o.name));
+            orgs.forEach(org => {
+                const daily = {};
+                allDates.forEach(d => daily[d] = 0);
+
+                org.users.forEach(user => {
+                    Object.entries(user.dailyData || {}).forEach(([date, data]) => {
+                        if (date >= selectedStartDate && date <= selectedEndDate) {
+                            if (currentMetric === 'time') {
+                                daily[date] = (daily[date] || 0) + (data.timeMinutes || 0);
+                            } else if (currentMetric === 'events') {
+                                daily[date] = (daily[date] || 0) + (data.events || 0);
+                            } else if (currentMetric === 'flowsStarted') {
+                                // flows are totals not daily, skip daily breakdown
+                            } else if (currentMetric === 'flowsCompleted') {
+                                // same
+                            } else if (currentMetric === 'successRate') {
+                                // same
+                            }
+                        }
+                    });
+
+                    // For flow metrics, distribute evenly across active days (approximation)
+                    if (['flowsStarted', 'flowsCompleted', 'successRate'].includes(currentMetric)) {
+                        const activeDates = Object.keys(user.dailyData || {}).filter(
+                            d => d >= selectedStartDate && d <= selectedEndDate
+                        );
+                        if (activeDates.length > 0) {
+                            const fs = user.flows?.started || 0;
+                            const fc = user.flows?.completed || 0;
+                            activeDates.forEach(date => {
+                                if (currentMetric === 'flowsStarted') {
+                                    daily[date] = (daily[date] || 0) + fs / activeDates.length;
+                                } else if (currentMetric === 'flowsCompleted') {
+                                    daily[date] = (daily[date] || 0) + fc / activeDates.length;
+                                }
+                            });
+                        }
+                    }
+                });
+
+                orgDailyMap[org.name] = daily;
+                orgTotals[org.name] = allDates.reduce((s, d) => s + (daily[d] || 0), 0);
+            });
+
+            // For success rate, compute per-org total then plot as flat or use started/completed ratio per day
+            if (currentMetric === 'successRate') {
+                orgs.forEach(org => {
+                    const daily = orgDailyMap[org.name];
+                    // Rebuild: for each date compute cumulative started & completed
+                    const startedDaily = {};
+                    const completedDaily = {};
+                    allDates.forEach(d => { startedDaily[d] = 0; completedDaily[d] = 0; });
+                    org.users.forEach(user => {
+                        const activeDates = Object.keys(user.dailyData || {}).filter(
+                            d => d >= selectedStartDate && d <= selectedEndDate
+                        );
+                        if (activeDates.length > 0) {
+                            const fs = user.flows?.started || 0;
+                            const fc = user.flows?.completed || 0;
+                            activeDates.forEach(date => {
+                                startedDaily[date] += fs / activeDates.length;
+                                completedDaily[date] += fc / activeDates.length;
+                            });
+                        }
+                    });
+                    allDates.forEach(d => {
+                        daily[d] = startedDaily[d] > 0 ? (completedDaily[d] / startedDaily[d]) * 100 : 0;
+                    });
+                    orgTotals[org.name] = Object.values(daily).reduce((s, v) => s + v, 0);
+                });
+            }
+
+            // Only show orgs with data, sorted by total descending, limit to top 10
+            const activeOrgs = Object.entries(orgTotals)
+                .filter(([_, total]) => total > 0)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10)
+                .map(([name]) => name);
+
+            // Date labels
+            const dateLabels = allDates.map(d => {
+                const dt = parseDate(d);
+                return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            });
+
+            // Build datasets
+            const datasets = activeOrgs.map((orgName, i) => {
+                const color = ORG_COLORS[i % ORG_COLORS.length];
+                const daily = orgDailyMap[orgName];
+                return {
+                    label: orgName,
+                    data: allDates.map(d => daily[d] || 0),
+                    borderColor: color,
+                    backgroundColor: color + '20',
+                    tension: 0.4,
+                    borderWidth: 2.5,
+                    pointRadius: 0,
+                    pointHoverRadius: 5,
+                    pointHoverBackgroundColor: color,
+                    pointHoverBorderColor: '#fff',
+                    pointHoverBorderWidth: 2,
+                    fill: false
+                };
+            });
+
+            const ctx = document.getElementById('usage-overview-chart').getContext('2d');
+            usageChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dateLabels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 600,
+                        easing: 'easeOutQuart'
+                    },
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                padding: 15,
+                                font: { size: 11, weight: '500' }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.85)',
+                            titleFont: { size: 14, weight: '600' },
+                            bodyFont: { size: 12 },
+                            padding: 12,
+                            cornerRadius: 8,
+                            callbacks: {
+                                title: (items) => items[0].label,
+                                label: (context) => {
+                                    const name = context.dataset.label;
+                                    const val = context.parsed.y;
+                                    return `${name}: ${cfg.formatTooltip(val)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(0,0,0,0.04)' },
+                            ticks: {
+                                font: { size: 10, weight: '500' },
+                                maxRotation: 45,
+                                minRotation: 0,
+                                maxTicksLimit: 15
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(0,0,0,0.06)' },
+                            ticks: {
+                                callback: (value) => cfg.formatTick(value),
+                                font: { size: 11 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Metric toggle listeners
+        document.querySelectorAll('.metric-toggle').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.metric-toggle').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentMetric = this.dataset.metric;
+                updateUsageChart();
+            });
+        });
+
+        // EVENT LISTENERS
+        document.getElementById('search-input').addEventListener('input', applyFilters);
+        
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentFilter = this.dataset.filter;
+                applyFilters();
+            });
+        });
+
+        document.getElementById('sort-select').addEventListener('change', function() {
+            currentSort = this.value;
+            applySorting();
+            renderEntities();
+        });
+
+        document.querySelectorAll('.date-preset-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.date-preset-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                const days = parseInt(this.dataset.days);
+                updateDateRange(days);
+            });
+        });
+
+        document.querySelectorAll('.view-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (selectedOrganization) return;  // Don't allow if drilled down
+                
+                document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentView = this.dataset.view;
+                refreshDashboard();
+            });
+        });
+
+        // INITIALIZE
+        const loadingOverlay = document.getElementById('loading-overlay');
+        loadingOverlay.classList.add('visible');
+
+        setTimeout(() => {
+            initializeDateRange();
+            processData();
+            applyFilters();
+            updateCharts();
+            loadingOverlay.classList.remove('visible');
+        }, 500);
+    </script>
+</body>
+</html>
