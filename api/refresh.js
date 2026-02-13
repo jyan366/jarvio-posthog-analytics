@@ -157,6 +157,7 @@ async function fetchAllUserEvents(host, projectId, apiKey, startDate, endDate) {
           AND person.properties.email != ''
         GROUP BY email, day
         ORDER BY email, day
+        LIMIT 10000
       `
     }
   });
