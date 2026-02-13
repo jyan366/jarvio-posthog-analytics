@@ -10,3 +10,4 @@ venv/
 .DS_Store
 node_modules/
 data/customer_data.json
+.vercel
