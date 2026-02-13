@@ -721,11 +721,8 @@
             <h3>👁️ View:</h3>
             <button class="view-btn active" data-view="organization">🏢 Organization View</button>
             <button class="view-btn" data-view="user">👤 User-Level View</button>
-            <span style="margin-left: 30px; border-left: 2px solid #dee2e6; padding-left: 20px; display: flex; align-items: center; gap: 10px;">
-                <label for="show-internal-toggle" style="cursor: pointer; font-size: 0.95em; font-weight: 600; color: #495057; user-select: none;">
-                    Show Internal (@jarvio.io)
-                </label>
-                <input type="checkbox" id="show-internal-toggle" style="width: 18px; height: 18px; cursor: pointer; accent-color: #667eea;">
+            <span style="margin-left: 30px; border-left: 2px solid #dee2e6; padding-left: 20px; display: flex; align-items: center;">
+                <button id="show-internal-toggle" class="view-btn" style="font-size: 0.9em; padding: 6px 16px;">🚫 Show Internal</button>
             </span>
         </div>
         
@@ -2814,10 +2811,20 @@
         // EVENT LISTENERS
         // Initialize internal toggle from state
         const internalToggle = document.getElementById('show-internal-toggle');
-        internalToggle.checked = showInternal;
-        internalToggle.addEventListener('change', function() {
-            showInternal = this.checked;
+        function updateInternalBtn() {
+            if (showInternal) {
+                internalToggle.textContent = '👁️ Hide Internal';
+                internalToggle.classList.add('active');
+            } else {
+                internalToggle.textContent = '🚫 Show Internal';
+                internalToggle.classList.remove('active');
+            }
+        }
+        updateInternalBtn();
+        internalToggle.addEventListener('click', function() {
+            showInternal = !showInternal;
             localStorage.setItem('showInternal', showInternal);
+            updateInternalBtn();
             refreshDashboard();
         });
 
