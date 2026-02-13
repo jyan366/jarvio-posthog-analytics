@@ -721,6 +721,12 @@
             <h3>👁️ View:</h3>
             <button class="view-btn active" data-view="organization">🏢 Organization View</button>
             <button class="view-btn" data-view="user">👤 User-Level View</button>
+            <span style="margin-left: 30px; border-left: 2px solid #dee2e6; padding-left: 20px; display: flex; align-items: center; gap: 10px;">
+                <label for="show-internal-toggle" style="cursor: pointer; font-size: 0.95em; font-weight: 600; color: #495057; user-select: none;">
+                    Show Internal (@jarvio.io)
+                </label>
+                <input type="checkbox" id="show-internal-toggle" style="width: 18px; height: 18px; cursor: pointer; accent-color: #667eea;">
+            </span>
         </div>
         
         <div class="usage-chart-section">
@@ -811,6 +817,14 @@
             'gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com',
             'icloud.com', 'protonmail.com', 'aol.com', 'mail.com'
         ];
+
+        // INTERNAL DOMAINS (hidden by default)
+        const INTERNAL_DOMAINS = ['jarvio.io', 'jarvioapp.com'];
+
+        function isInternalDomain(domain) {
+            const d = domain.toLowerCase();
+            return INTERNAL_DOMAINS.some(id => d === id || d.endsWith('.' + id));
+        }
 
         // SAMPLE DATA WITH USER-LEVEL BREAKDOWN AND TIME TRACKING
         const TIME_SERIES_DATA = {
@@ -1880,6 +1894,7 @@
         // Total customers: 30
 
         // STATE
+        let showInternal = localStorage.getItem('showInternal') === 'true';
         let currentView = 'organization';  // 'organization' or 'user'
         let selectedOrganization = null;
         let currentFilter = 'all';
@@ -1938,6 +1953,7 @@
                 // Organization-level aggregation
                 TIME_SERIES_DATA.organizations
                     .filter(org => !isGenericDomain(org.name))
+                    .filter(org => showInternal || !isInternalDomain(org.name))
                     .forEach(org => {
                         let totalTime = 0;
                         let totalEvents = 0;
