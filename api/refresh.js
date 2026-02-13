@@ -149,7 +149,7 @@ async function fetchAllUserEvents(host, projectId, apiKey, startDate, endDate) {
           person.properties.email as email,
           toDate(timestamp) as day,
           count() as event_count,
-          countIf(event = 'user_active') as active_pings
+          uniq(toStartOfMinute(timestamp)) as active_minutes
         FROM events
         WHERE timestamp >= '${startDate}' 
           AND timestamp <= '${endDate}T23:59:59'
@@ -164,7 +164,7 @@ async function fetchAllUserEvents(host, projectId, apiKey, startDate, endDate) {
 
   if (eventsQuery.results) {
     for (const row of eventsQuery.results) {
-      const [email, day, eventCount, activePings] = row;
+      const [email, day, eventCount, activeMinutes] = row;
       if (!email || !email.includes('@')) continue;
       
       const cleanEmail = email.toLowerCase().trim();
@@ -180,13 +180,9 @@ async function fetchAllUserEvents(host, projectId, apiKey, startDate, endDate) {
       }
 
       const dayStr = typeof day === 'string' ? day.split(' ')[0] : day;
-      // Each user_active ping ≈ 1 minute of activity
-      // If no user_active events, estimate from total events (1 min per 10 events, min 1)
-      let timeEst = activePings > 0 
-        ? activePings 
-        : Math.max(1, Math.round(eventCount / 10));
-      // Cap at 480 minutes (8h) per day as sanity check
-      timeEst = Math.min(timeEst, 480);
+      // Use actual count of distinct active minutes
+      // This counts unique minutes with any activity (accurate time tracking)
+      const timeEst = activeMinutes || 0;
       
       userData[cleanEmail].totalEvents += eventCount;
       userData[cleanEmail].totalTimeMinutes += timeEst;
