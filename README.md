@@ -43,8 +43,14 @@ python3 src/generate_dashboard.py data/customer_data.json dashboard.html
 ## 📁 Project Structure
 
 ```
-├── dashboard.html          # The dashboard (open in browser)
-├── refresh.sh              # One-command data refresh
+├── index.html              # The dashboard (open in browser)
+├── api/
+│   ├── refresh.js          # Serverless: fetch from PostHog API
+│   └── data.js             # Serverless: return cached data
+├── vercel.json             # Vercel configuration
+├── .env.example            # Required environment variables
+├── API_BACKEND.md          # API documentation
+├── refresh.sh              # One-command data refresh (Python pipeline)
 ├── src/
 │   ├── parse_report.py     # Markdown report → JSON
 │   └── generate_dashboard.py  # JSON → embedded HTML dashboard
@@ -80,10 +86,29 @@ See `data/sample_report.md` for a complete example.
 
 ## 🚢 Deploy Options
 
-- **Local**: Just `open dashboard.html`
-- **GitHub Pages**: Push to repo, enable Pages on `main` branch
-- **Vercel/Netlify**: Drop the repo — it's a static site
-- **Share**: Send `dashboard.html` as a single file — it's fully self-contained
+- **Local**: Just `open index.html`
+- **GitHub Pages**: Push to repo, enable Pages on `main` branch (static data only)
+- **Vercel** (recommended): Live data from PostHog via serverless API
+- **Share**: Send `index.html` as a single file — embedded data always works
+
+### Vercel Deployment with Live Data
+
+1. Push to GitHub and import in [vercel.com](https://vercel.com)
+2. Add environment variable: `POSTHOG_API_KEY` = your PostHog personal API key
+3. Deploy — the dashboard will fetch live data from PostHog
+
+**API Endpoints:**
+- `GET /api/data` — Returns cached dashboard data (auto-refreshes if stale)
+- `GET /api/refresh?days=60` — Forces a fresh fetch from PostHog
+
+**Local dev:**
+```bash
+cp .env.example .env
+# Add your POSTHOG_API_KEY to .env
+npx vercel dev
+```
+
+See [API_BACKEND.md](API_BACKEND.md) for full API documentation.
 
 ## 🧪 Tests
 

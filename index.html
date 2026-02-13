@@ -692,6 +692,20 @@
         <div class="header">
             <h1>⏱️ Jarvio Time Tracking & User Analytics</h1>
             <p id="date-range-display">Accurate Time Tracking | User-Level Insights</p>
+            <div style="margin-top: 15px;">
+                <button id="refresh-btn" onclick="refreshFromAPI()" style="
+                    padding: 10px 24px;
+                    background: rgba(255,255,255,0.2);
+                    color: white;
+                    border: 2px solid rgba(255,255,255,0.5);
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-size: 0.95em;
+                    font-weight: 600;
+                    transition: all 0.2s;
+                ">🔄 Refresh from PostHog</button>
+                <span id="refresh-status" style="margin-left: 12px; font-size: 0.85em; opacity: 0.8;"></span>
+            </div>
         </div>
         
         <div class="date-range-picker">
@@ -2796,17 +2810,80 @@
             });
         });
 
+        // EMBEDDED DATA (fallback)
+        const EMBEDDED_DATA = JSON.parse(JSON.stringify(TIME_SERIES_DATA));
+
+        // API FETCH WITH FALLBACK
+        async function fetchDashboardData() {
+            try {
+                const resp = await fetch('/api/data');
+                if (!resp.ok) throw new Error(`API returned ${resp.status}`);
+                const data = await resp.json();
+                if (data.error) throw new Error(data.error);
+                if (data.organizations && data.organizations.length > 0) {
+                    // Replace TIME_SERIES_DATA contents
+                    TIME_SERIES_DATA.organizations = data.organizations;
+                    TIME_SERIES_DATA.startDate = data.startDate;
+                    TIME_SERIES_DATA.endDate = data.endDate;
+                    console.log('✅ Loaded live data from API');
+                    const status = document.getElementById('refresh-status');
+                    if (data.refreshedAt) {
+                        const ago = Math.round((Date.now() - new Date(data.refreshedAt).getTime()) / 60000);
+                        status.textContent = data._cached ? `Cached (${ago}m ago)` : 'Live data';
+                    }
+                    return true;
+                }
+            } catch (err) {
+                console.warn('API fetch failed, using embedded data:', err.message);
+                document.getElementById('refresh-status').textContent = 'Using embedded data';
+            }
+            return false;
+        }
+
+        async function refreshFromAPI() {
+            const btn = document.getElementById('refresh-btn');
+            const status = document.getElementById('refresh-status');
+            btn.disabled = true;
+            btn.textContent = '⏳ Refreshing...';
+            status.textContent = 'Fetching from PostHog...';
+
+            try {
+                const resp = await fetch('/api/refresh');
+                if (!resp.ok) throw new Error(`API returned ${resp.status}`);
+                const data = await resp.json();
+                if (data.error) throw new Error(data.error);
+
+                TIME_SERIES_DATA.organizations = data.organizations;
+                TIME_SERIES_DATA.startDate = data.startDate;
+                TIME_SERIES_DATA.endDate = data.endDate;
+
+                initializeDateRange();
+                processData();
+                applyFilters();
+                updateCharts();
+
+                status.textContent = `✅ Refreshed at ${new Date().toLocaleTimeString()}`;
+            } catch (err) {
+                status.textContent = `❌ ${err.message}`;
+                console.error('Refresh failed:', err);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🔄 Refresh from PostHog';
+            }
+        }
+
         // INITIALIZE
         const loadingOverlay = document.getElementById('loading-overlay');
         loadingOverlay.classList.add('visible');
 
-        setTimeout(() => {
+        (async () => {
+            await fetchDashboardData();
             initializeDateRange();
             processData();
             applyFilters();
             updateCharts();
             loadingOverlay.classList.remove('visible');
-        }, 500);
+        })();
     </script>
 </body>
 </html>

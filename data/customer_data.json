@@ -1,0 +1,991 @@
+{
+  "generated": "2026-02-12T22:06:02.055985",
+  "dateRange": {
+    "start": "2025-12-14",
+    "end": "2026-02-12"
+  },
+  "customers": [
+    {
+      "name": "theamazonwhisperer.com",
+      "users": [
+        {
+          "email": "alex@theamazonwhisperer.com",
+          "events": 14343,
+          "totalTimeMinutes": 338,
+          "flows": 360
+        },
+        {
+          "email": "ben.w@theamazonwhisperer.com",
+          "events": 8,
+          "totalTimeMinutes": 1,
+          "flows": 0
+        },
+        {
+          "email": "ryan@theamazonwhisperer.com",
+          "events": 56863,
+          "totalTimeMinutes": 1342,
+          "flows": 371
+        }
+      ],
+      "totalTimeMinutes": 1681,
+      "totalEvents": 71214,
+      "flowsStarted": 731,
+      "flowsCompleted": 240,
+      "flowsFailed": 3383,
+      "dailyData": [
+        {
+          "date": "2026-02-03",
+          "events": 1721
+        },
+        {
+          "date": "2026-02-04",
+          "events": 3609
+        },
+        {
+          "date": "2026-02-05",
+          "events": 3191
+        },
+        {
+          "date": "2026-02-06",
+          "events": 373
+        },
+        {
+          "date": "2026-02-09",
+          "events": 1354
+        },
+        {
+          "date": "2026-02-10",
+          "events": 583
+        },
+        {
+          "date": "2026-02-11",
+          "events": 269
+        }
+      ],
+      "avgSessionMinutes": 1681,
+      "activeUsers": 3,
+      "successRate": 32.8
+    },
+    {
+      "name": "marketrocket.co.uk",
+      "users": [
+        {
+          "email": "matthew.peck@marketrocket.co.uk",
+          "events": 481,
+          "totalTimeMinutes": 30,
+          "flows": 7
+        },
+        {
+          "email": "matthew.peck@marketrocket.co.uk",
+          "events": 21,
+          "totalTimeMinutes": 0,
+          "flows": 0
+        }
+      ],
+      "totalTimeMinutes": 30,
+      "totalEvents": 502,
+      "flowsStarted": 7,
+      "flowsCompleted": 3,
+      "flowsFailed": 4,
+      "dailyData": [
+        {
+          "date": "2025-12-16",
+          "events": 27
+        },
+        {
+          "date": "2026-01-13",
+          "events": 36
+        },
+        {
+          "date": "2026-01-15",
+          "events": 14
+        },
+        {
+          "date": "2026-01-16",
+          "events": 13
+        },
+        {
+          "date": "2026-01-21",
+          "events": 13
+        },
+        {
+          "date": "2026-01-28",
+          "events": 399
+        }
+      ],
+      "avgSessionMinutes": 30,
+      "activeUsers": 2,
+      "successRate": 42.9
+    },
+    {
+      "name": "enflet.io",
+      "users": [
+        {
+          "email": "ryan@enflet.io",
+          "events": 469,
+          "totalTimeMinutes": 66,
+          "flows": 1
+        },
+        {
+          "email": "ryan@enflet.io",
+          "events": 0,
+          "totalTimeMinutes": 0,
+          "flows": 0
+        }
+      ],
+      "totalTimeMinutes": 66,
+      "totalEvents": 469,
+      "flowsStarted": 1,
+      "flowsCompleted": 1,
+      "flowsFailed": 0,
+      "dailyData": [
+        {
+          "date": "2026-01-29",
+          "events": 36
+        },
+        {
+          "date": "2026-02-02",
+          "events": 36
+        },
+        {
+          "date": "2026-02-03",
+          "events": 113
+        },
+        {
+          "date": "2026-02-05",
+          "events": 78
+        },
+        {
+          "date": "2026-02-07",
+          "events": 28
+        },
+        {
+          "date": "2026-02-09",
+          "events": 58
+        },
+        {
+          "date": "2026-02-10",
+          "events": 56
+        }
+      ],
+      "avgSessionMinutes": 66,
+      "activeUsers": 2,
+      "successRate": 100.0
+    },
+    {
+      "name": "myshoespot.com",
+      "users": [
+        {
+          "email": "perent@myshoespot.com",
+          "events": 292,
+          "totalTimeMinutes": 239,
+          "flows": 3
+        },
+        {
+          "email": "perent@myshoespot.com",
+          "events": 0,
+          "totalTimeMinutes": 0,
+          "flows": 0
+        }
+      ],
+      "totalTimeMinutes": 239,
+      "totalEvents": 292,
+      "flowsStarted": 3,
+      "flowsCompleted": 1,
+      "flowsFailed": 2,
+      "dailyData": [
+        {
+          "date": "2026-01-14",
+          "events": 3
+        },
+        {
+          "date": "2026-01-15",
+          "events": 3
+        },
+        {
+          "date": "2026-01-22",
+          "events": 20
+        },
+        {
+          "date": "2026-01-26",
+          "events": 35
+        },
+        {
+          "date": "2026-01-29",
+          "events": 89
+        },
+        {
+          "date": "2026-02-10",
+          "events": 66
+        },
+        {
+          "date": "2026-02-11",
+          "events": 9
+        }
+      ],
+      "avgSessionMinutes": 239,
+      "activeUsers": 2,
+      "successRate": 33.3
+    },
+    {
+      "name": "earthchimp.com",
+      "users": [
+        {
+          "email": "dave@earthchimp.com",
+          "events": 188,
+          "totalTimeMinutes": 1,
+          "flows": 0
+        }
+      ],
+      "totalTimeMinutes": 1,
+      "totalEvents": 188,
+      "flowsStarted": 0,
+      "flowsCompleted": 0,
+      "flowsFailed": 0,
+      "dailyData": [
+        {
+          "date": "2026-01-26",
+          "events": 110
+        },
+        {
+          "date": "2026-01-27",
+          "events": 78
+        }
+      ],
+      "avgSessionMinutes": 0,
+      "activeUsers": 1
+    },
+    {
+      "name": "aimoh.com",
+      "users": [
+        {
+          "email": "chs@aimoh.com",
+          "events": 133,
+          "totalTimeMinutes": 25,
+          "flows": 0
+        },
+        {
+          "email": "chs@aimoh.com",
+          "events": 11,
+          "totalTimeMinutes": 0,
+          "flows": 0
+        }
+      ],
+      "totalTimeMinutes": 25,
+      "totalEvents": 144,
+      "flowsStarted": 0,
+      "flowsCompleted": 0,
+      "flowsFailed": 0,
+      "dailyData": [
+        {
+          "date": "2026-01-13",
+          "events": 32
+        },
+        {
+          "date": "2026-01-15",
+          "events": 3
+        },
+        {
+          "date": "2026-01-28",
+          "events": 23
+        },
+        {
+          "date": "2026-01-29",
+          "events": 23
+        },
+        {
+          "date": "2026-02-02",
+          "events": 22
+        },
+        {
+          "date": "2026-02-03",
+          "events": 22
+        },
+        {
+          "date": "2026-02-04",
+          "events": 19
+        }
+      ],
+      "avgSessionMinutes": 25,
+      "activeUsers": 2
+    },
+    {
+      "name": "colormorelines.com",
+      "users": [
+        {
+          "email": "ricardo@colormorelines.com",
+          "events": 83,
+          "totalTimeMinutes": 18,
+          "flows": 0
+        }
+      ],
+      "totalTimeMinutes": 18,
+      "totalEvents": 83,
+      "flowsStarted": 0,
+      "flowsCompleted": 0,
+      "flowsFailed": 0,
+      "dailyData": [
+        {
+          "date": "2026-01-14",
+          "events": 83
+        }
+      ],
+      "avgSessionMinutes": 18,
+      "activeUsers": 1
+    },
+    {
+      "name": "doublewoodsupplements.com",
+      "users": [
+        {
+          "email": "dhunnewell@doublewoodsupplements.com",
+          "events": 68,
+          "totalTimeMinutes": 2,
+          "flows": 0
+        },
+        {
+          "email": "dhunnewell@doublewoodsupplements.com",
+          "events": 0,
+          "totalTimeMinutes": 0,
+          "flows": 0
+        }
+      ],
+      "totalTimeMinutes": 2,
+      "totalEvents": 68,
+      "flowsStarted": 0,
+      "flowsCompleted": 0,
+      "flowsFailed": 0,
+      "dailyData": [
+        {
+          "date": "2025-12-18",
+          "events": 1
+        },
+        {
+          "date": "2025-12-23",
+          "events": 7
+        },
+        {
+          "date": "2026-01-15",
+          "events": 3
+        },
+        {
+          "date": "2026-01-19",
+          "events": 3
+        },
+        {
+          "date": "2026-02-01",
+          "events": 27
+        },
+        {
+          "date": "2026-02-07",
+          "events": 27
+        }
+      ],
+      "avgSessionMinutes": 2,
+      "activeUsers": 2
+    },
+    {
+      "name": "accelobrand.com",
+      "users": [
+        {
+          "email": "hello@accelobrand.com",
+          "events": 30,
+          "totalTimeMinutes": 3,
+          "flows": 0
+        },
+        {
+          "email": "hello@accelobrand.com",
+          "events": 10,
+          "totalTimeMinutes": 0,
+          "flows": 0
+        }
+      ],
+      "totalTimeMinutes": 3,
+      "totalEvents": 40,
+      "flowsStarted": 0,
+      "flowsCompleted": 0,
+      "flowsFailed": 0,
+      "dailyData": [
+        {
+          "date": "2025-12-30",
+          "events": 27
+        },
+        {
+          "date": "2026-01-01",
+          "events": 2
+        },
+        {
+          "date": "2026-01-13",
+          "events": 8
+        },
+        {
+          "date": "2026-01-19",
+          "events": 3
+        }
+      ],
+      "avgSessionMinutes": 3,
+      "activeUsers": 2
+    },
+    {
+      "name": "lifeprofitness.com",
+      "users": [
+        {
+          "email": "Tehsin@lifeprofitness.com",
+          "events": 13,
+          "totalTimeMinutes": 7,
+          "flows": 0
+        },
+        {
+          "email": "Tehsin@lifeprofitness.com",
+          "events": 25,
+          "totalTimeMinutes": 0,
+          "flows": 0
+        }
+      ],
+      "totalTimeMinutes": 7,
+      "totalEvents": 38,
+      "flowsStarted": 0,
+      "flowsCompleted": 0,
+      "flowsFailed": 0,
+      "dailyData": [
+        {
+          "date": "2025-12-19",
+          "events": 32
+        },
+        {
+          "date": "2026-01-05",
+          "events": 6
+        }
+      ],
+      "avgSessionMinutes": 7,
+      "activeUsers": 2
+    },
+    {
+      "name": "phizz.co",
+      "users": [
+        {
+          "email": "tom.devonshire@phizz.co",
+          "events": 12,
+          "totalTimeMinutes": 173,
+          "flows": 0
+        },
+        {
+          "email": "tom.devonshire@phizz.co",
+          "events": 15,
+          "totalTimeMinutes": 0,
+          "flows": 0
+        }
+      ],
+      "totalTimeMinutes": 173,
+      "totalEvents": 27,
+      "flowsStarted": 0,
+      "flowsCompleted": 0,
+      "flowsFailed": 0,
+      "dailyData": [
+        {
+          "date": "2025-12-17",
+          "events": 27
+        }
+      ],
+      "avgSessionMinutes": 3,
+      "activeUsers": 2
+    },
+    {
+      "name": "picsilsport.com",
+      "users": [
+        {
+          "email": "michele.gaglia@picsilsport.com",
+          "events": 6,
+          "totalTimeMinutes": 0,
+          "flows": 0
+        },
+        {
+          "email": "michele.gaglia@picsilsport.com",
+          "events": 11,
+          "totalTimeMinutes": 0,
+          "flows": 0
+        }
+      ],
+      "totalTimeMinutes": 0,
+      "totalEvents": 17,
+      "flowsStarted": 0,
+      "flowsCompleted": 0,
+      "flowsFailed": 0,
+      "dailyData": [
+        {
+          "date": "2025-12-19",
+          "events": 17
+        }
+      ],
+      "avgSessionMinutes": 1,
+      "activeUsers": 2
+    },
+    {
+      "name": "rdyparts.com",
+      "users": [
+        {
+          "email": "info@rdyparts.com",
+          "events": 16,
+          "totalTimeMinutes": 1,
+          "flows": 0
+        }
+      ],
+      "totalTimeMinutes": 1,
+      "totalEvents": 16,
+      "flowsStarted": 0,
+      "flowsCompleted": 0,
+      "flowsFailed": 0,
+      "dailyData": [
+        {
+          "date": "2025-12-15",
+          "events": 1
+        },
+        {
+          "date": "2025-12-16",
+          "events": 1
+        },
+        {
+          "date": "2026-01-11",
+          "events": 10
+        },
+        {
+          "date": "2026-01-13",
+          "events": 4
+        }
+      ],
+      "avgSessionMinutes": 0,
+      "activeUsers": 1
+    },
+    {
+      "name": "scarfixplus.com",
+      "users": [
+        {
+          "email": "robert@scarfixplus.com",
+          "events": 3,
+          "totalTimeMinutes": 0,
+          "flows": 0
+        },
+        {
+          "email": "robert@scarfixplus.com",
+          "events": 10,
+          "totalTimeMinutes": 2,
+          "flows": 0
+        }
+      ],
+      "totalTimeMinutes": 2,
+      "totalEvents": 13,
+      "flowsStarted": 0,
+      "flowsCompleted": 0,
+      "flowsFailed": 0,
+      "dailyData": [
+        {
+          "date": "2025-12-17",
+          "events": 13
+        }
+      ],
+      "avgSessionMinutes": 2,
+      "activeUsers": 2
+    },
+    {
+      "name": "ukr.net",
+      "users": [
+        {
+          "email": "podyakova@ukr.net",
+          "events": 2,
+          "totalTimeMinutes": 0,
+          "flows": 0
+        },
+        {
+          "email": "podyakova@ukr.net",
+          "events": 10,
+          "totalTimeMinutes": 0,
+          "flows": 0
+        }
+      ],
+      "totalTimeMinutes": 0,
+      "totalEvents": 12,
+      "flowsStarted": 0,
+      "flowsCompleted": 0,
+      "flowsFailed": 0,
+      "dailyData": [
+        {
+          "date": "2025-12-16",
+          "events": 12
+        }
+      ],
+      "avgSessionMinutes": 0,
+      "activeUsers": 2
+    },
+    {
+      "name": "estorefactory.net",
+      "users": [
+        {
+          "email": "krishna@estorefactory.net",
+          "events": 7,
+          "totalTimeMinutes": 0,
+          "flows": 0
+        }
+      ],
+      "totalTimeMinutes": 0,
+      "totalEvents": 7,
+      "flowsStarted": 0,
+      "flowsCompleted": 0,
+      "flowsFailed": 0,
+      "dailyData": [
+        {
+          "date": "2025-12-16",
+          "events": 7
+        }
+      ],
+      "avgSessionMinutes": 0,
+      "activeUsers": 1
+    },
+    {
+      "name": "momo-lifestyle.com",
+      "users": [
+        {
+          "email": "info@momo-lifestyle.com",
+          "events": 6,
+          "totalTimeMinutes": 0,
+          "flows": 0
+        }
+      ],
+      "totalTimeMinutes": 0,
+      "totalEvents": 6,
+      "flowsStarted": 0,
+      "flowsCompleted": 0,
+      "flowsFailed": 0,
+      "dailyData": [
+        {
+          "date": "2026-01-08",
+          "events": 6
+        }
+      ],
+      "avgSessionMinutes": 0,
+      "activeUsers": 1
+    },
+    {
+      "name": "specialbreed.co",
+      "users": [
+        {
+          "email": "hello@specialbreed.co",
+          "events": 5,
+          "totalTimeMinutes": 1,
+          "flows": 0
+        }
+      ],
+      "totalTimeMinutes": 1,
+      "totalEvents": 5,
+      "flowsStarted": 0,
+      "flowsCompleted": 0,
+      "flowsFailed": 0,
+      "dailyData": [
+        {
+          "date": "2025-12-18",
+          "events": 5
+        }
+      ],
+      "avgSessionMinutes": 1,
+      "activeUsers": 1
+    },
+    {
+      "name": "jdohea.com",
+      "users": [
+        {
+          "email": "me@jdohea.com",
+          "events": 0,
+          "totalTimeMinutes": 0,
+          "flows": 0
+        },
+        {
+          "email": "me@jdohea.com",
+          "events": 0,
+          "totalTimeMinutes": 0,
+          "flows": 0
+        },
+        {
+          "email": "me@jdohea.com",
+          "events": 0,
+          "totalTimeMinutes": 0,
+          "flows": 0
+        },
+        {
+          "email": "me@jdohea.com",
+          "events": 0,
+          "totalTimeMinutes": 0,
+          "flows": 0
+        },
+        {
+          "email": "me@jdohea.com",
+          "events": 0,
+          "totalTimeMinutes": 0,
+          "flows": 0
+        },
+        {
+          "email": "me@jdohea.com",
+          "events": 0,
+          "totalTimeMinutes": 0,
+          "flows": 0
+        },
+        {
+          "email": "me@jdohea.com",
+          "events": 0,
+          "totalTimeMinutes": 0,
+          "flows": 0
+        },
+        {
+          "email": "me@jdohea.com",
+          "events": 0,
+          "totalTimeMinutes": 0,
+          "flows": 0
+        }
+      ],
+      "totalTimeMinutes": 0,
+      "totalEvents": 0,
+      "flowsStarted": 0,
+      "flowsCompleted": 0,
+      "flowsFailed": 0,
+      "dailyData": [],
+      "avgSessionMinutes": 0,
+      "activeUsers": 8
+    },
+    {
+      "name": "jarvioapp.com",
+      "users": [
+        {
+          "email": "connor@jarvioapp.com",
+          "events": 0,
+          "totalTimeMinutes": 0,
+          "flows": 0
+        }
+      ],
+      "totalTimeMinutes": 0,
+      "totalEvents": 0,
+      "flowsStarted": 0,
+      "flowsCompleted": 0,
+      "flowsFailed": 0,
+      "dailyData": [],
+      "avgSessionMinutes": 0,
+      "activeUsers": 1
+    },
+    {
+      "name": "nomadz.com",
+      "users": [
+        {
+          "email": "caleb@nomadz.com",
+          "events": 0,
+          "totalTimeMinutes": 0,
+          "flows": 0
+        },
+        {
+          "email": "caleb@nomadz.com",
+          "events": 0,
+          "totalTimeMinutes": 0,
+          "flows": 0
+        }
+      ],
+      "totalTimeMinutes": 0,
+      "totalEvents": 0,
+      "flowsStarted": 0,
+      "flowsCompleted": 0,
+      "flowsFailed": 0,
+      "dailyData": [],
+      "avgSessionMinutes": 0,
+      "activeUsers": 2
+    },
+    {
+      "name": "papercrush.de",
+      "users": [
+        {
+          "email": "patrick@papercrush.de",
+          "events": 0,
+          "totalTimeMinutes": 0,
+          "flows": 0
+        },
+        {
+          "email": "patrick@papercrush.de",
+          "events": 0,
+          "totalTimeMinutes": 0,
+          "flows": 0
+        }
+      ],
+      "totalTimeMinutes": 0,
+      "totalEvents": 0,
+      "flowsStarted": 0,
+      "flowsCompleted": 0,
+      "flowsFailed": 0,
+      "dailyData": [],
+      "avgSessionMinutes": 0,
+      "activeUsers": 2
+    },
+    {
+      "name": "amerify.co",
+      "users": [
+        {
+          "email": "support+ue@amerify.co",
+          "events": 0,
+          "totalTimeMinutes": 0,
+          "flows": 0
+        }
+      ],
+      "totalTimeMinutes": 0,
+      "totalEvents": 0,
+      "flowsStarted": 0,
+      "flowsCompleted": 0,
+      "flowsFailed": 0,
+      "dailyData": [],
+      "avgSessionMinutes": 0,
+      "activeUsers": 1
+    },
+    {
+      "name": "dmoose.com",
+      "users": [
+        {
+          "email": "amazon@dmoose.com",
+          "events": 0,
+          "totalTimeMinutes": 0,
+          "flows": 0
+        },
+        {
+          "email": "amazon@dmoose.com",
+          "events": 0,
+          "totalTimeMinutes": 0,
+          "flows": 0
+        }
+      ],
+      "totalTimeMinutes": 0,
+      "totalEvents": 0,
+      "flowsStarted": 0,
+      "flowsCompleted": 0,
+      "flowsFailed": 0,
+      "dailyData": [],
+      "avgSessionMinutes": 0,
+      "activeUsers": 2
+    },
+    {
+      "name": "mozmail.com",
+      "users": [
+        {
+          "email": "3xrddpjsr@mozmail.com",
+          "events": 0,
+          "totalTimeMinutes": 0,
+          "flows": 0
+        },
+        {
+          "email": "3xrddpjsr@mozmail.com",
+          "events": 0,
+          "totalTimeMinutes": 0,
+          "flows": 0
+        }
+      ],
+      "totalTimeMinutes": 0,
+      "totalEvents": 0,
+      "flowsStarted": 0,
+      "flowsCompleted": 0,
+      "flowsFailed": 0,
+      "dailyData": [],
+      "avgSessionMinutes": 0,
+      "activeUsers": 2
+    },
+    {
+      "name": "brandlaunchhq.com",
+      "users": [
+        {
+          "email": "connor@brandlaunchhq.com",
+          "events": 0,
+          "totalTimeMinutes": 0,
+          "flows": 0
+        }
+      ],
+      "totalTimeMinutes": 0,
+      "totalEvents": 0,
+      "flowsStarted": 0,
+      "flowsCompleted": 0,
+      "flowsFailed": 0,
+      "dailyData": [],
+      "avgSessionMinutes": 0,
+      "activeUsers": 1
+    },
+    {
+      "name": "supersonic-brands.com",
+      "users": [
+        {
+          "email": "info@supersonic-brands.com",
+          "events": 0,
+          "totalTimeMinutes": 0,
+          "flows": 0
+        },
+        {
+          "email": "info@supersonic-brands.com",
+          "events": 0,
+          "totalTimeMinutes": 0,
+          "flows": 0
+        }
+      ],
+      "totalTimeMinutes": 0,
+      "totalEvents": 0,
+      "flowsStarted": 0,
+      "flowsCompleted": 0,
+      "flowsFailed": 0,
+      "dailyData": [],
+      "avgSessionMinutes": 0,
+      "activeUsers": 2
+    },
+    {
+      "name": "ejam.com",
+      "users": [
+        {
+          "email": "ss@ejam.com",
+          "events": 0,
+          "totalTimeMinutes": 0,
+          "flows": 0
+        }
+      ],
+      "totalTimeMinutes": 0,
+      "totalEvents": 0,
+      "flowsStarted": 0,
+      "flowsCompleted": 0,
+      "flowsFailed": 0,
+      "dailyData": [],
+      "avgSessionMinutes": 0,
+      "activeUsers": 1
+    },
+    {
+      "name": "ebrands.com",
+      "users": [
+        {
+          "email": "ed.snelson@ebrands.com",
+          "events": 0,
+          "totalTimeMinutes": 0,
+          "flows": 0
+        }
+      ],
+      "totalTimeMinutes": 0,
+      "totalEvents": 0,
+      "flowsStarted": 0,
+      "flowsCompleted": 0,
+      "flowsFailed": 0,
+      "dailyData": [],
+      "avgSessionMinutes": 0,
+      "activeUsers": 1
+    },
+    {
+      "name": "jswmediainc.com",
+      "users": [
+        {
+          "email": "jeff@jswmediainc.com",
+          "events": 0,
+          "totalTimeMinutes": 0,
+          "flows": 0
+        }
+      ],
+      "totalTimeMinutes": 0,
+      "totalEvents": 0,
+      "flowsStarted": 0,
+      "flowsCompleted": 0,
+      "flowsFailed": 0,
+      "dailyData": [],
+      "avgSessionMinutes": 0,
+      "activeUsers": 1
+    }
+  ]
+}
