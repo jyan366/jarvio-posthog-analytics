@@ -140,7 +140,7 @@ async function fetchAllUserEvents(host, projectId, apiKey, startDate, endDate) {
   
   const userData = {};
 
-  // Query 1: Get events grouped by person with daily breakdown using HogQL
+  // Query 1: Get all events grouped by person with daily breakdown using HogQL
   const eventsQuery = await posthogQuery(host, projectId, apiKey, '/query/', {
     query: {
       kind: 'HogQLQuery',
@@ -149,9 +149,7 @@ async function fetchAllUserEvents(host, projectId, apiKey, startDate, endDate) {
           person.properties.email as email,
           toDate(timestamp) as day,
           count() as event_count,
-          min(timestamp) as first_event,
-          max(timestamp) as last_event,
-          dateDiff('minute', min(timestamp), max(timestamp)) as active_minutes
+          countIf(event = 'user_active') as active_pings
         FROM events
         WHERE timestamp >= '${startDate}' 
           AND timestamp <= '${endDate}T23:59:59'
@@ -165,7 +163,7 @@ async function fetchAllUserEvents(host, projectId, apiKey, startDate, endDate) {
 
   if (eventsQuery.results) {
     for (const row of eventsQuery.results) {
-      const [email, day, eventCount, firstEvent, lastEvent, activeMinutes] = row;
+      const [email, day, eventCount, activePings] = row;
       if (!email || !email.includes('@')) continue;
       
       const cleanEmail = email.toLowerCase().trim();
@@ -181,8 +179,13 @@ async function fetchAllUserEvents(host, projectId, apiKey, startDate, endDate) {
       }
 
       const dayStr = typeof day === 'string' ? day.split(' ')[0] : day;
-      // Estimate time: use active_minutes but cap at reasonable session length
-      const timeEst = Math.min(activeMinutes || 0, 480); // cap at 8h per day
+      // Each user_active ping ≈ 1 minute of activity
+      // If no user_active events, estimate from total events (1 min per 10 events, min 1)
+      let timeEst = activePings > 0 
+        ? activePings 
+        : Math.max(1, Math.round(eventCount / 10));
+      // Cap at 480 minutes (8h) per day as sanity check
+      timeEst = Math.min(timeEst, 480);
       
       userData[cleanEmail].totalEvents += eventCount;
       userData[cleanEmail].totalTimeMinutes += timeEst;
