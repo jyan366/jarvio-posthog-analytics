@@ -736,6 +736,9 @@
                     <button class="metric-toggle" data-metric="flowsCompleted">✅ Flows Completed</button>
                     <button class="metric-toggle" data-metric="successRate">📈 Success Rate</button>
                 </div>
+                <div class="metric-toggles" style="margin-top: 8px;">
+                    <button id="totals-only-toggle" class="metric-toggle" style="font-size: 0.85em;">📉 Totals Only</button>
+                </div>
             </div>
             <div class="usage-chart-canvas-wrap">
                 <canvas id="usage-overview-chart"></canvas>
@@ -2523,6 +2526,16 @@
         // USAGE OVERVIEW CHART
         let currentMetric = 'time';
         let usageChart = null;
+        let totalsOnly = false;
+
+        // 7-day moving average smoother
+        function movingAverage(data, window) {
+            return data.map((val, i) => {
+                const start = Math.max(0, i - window + 1);
+                const slice = data.slice(start, i + 1);
+                return slice.reduce((a, b) => a + b, 0) / slice.length;
+            });
+        }
 
         const metricConfig = {
             time: {
@@ -2730,26 +2743,35 @@
                 };
             });
 
-            // Add Total line (sum of all active entities per day)
+            // Add Total line (7-day moving average, sum of all active entities per day)
             if (currentMetric !== 'successRate' && activeEntities.length > 1) {
-                const totalData = allDates.map(d => {
+                const rawTotalData = allDates.map(d => {
                     return activeEntities.reduce((sum, name) => sum + (entityDailyMap[name][d] || 0), 0);
                 });
+                const smoothedData = movingAverage(rawTotalData, 7);
                 datasets.unshift({
-                    label: 'Total',
-                    data: totalData,
+                    label: 'Total (7-day avg)',
+                    data: smoothedData,
                     borderColor: '#000000',
                     backgroundColor: 'rgba(0,0,0,0.05)',
                     tension: 0.4,
                     borderWidth: 3.5,
-                    borderDash: [6, 3],
                     pointRadius: 0,
                     pointHoverRadius: 6,
                     pointHoverBackgroundColor: '#000',
                     pointHoverBorderColor: '#fff',
                     pointHoverBorderWidth: 2,
-                    fill: false
+                    fill: true
                 });
+            }
+
+            // If totals-only mode, hide individual entity lines
+            if (totalsOnly) {
+                const totalDs = datasets.find(ds => ds.label.startsWith('Total'));
+                if (totalDs) {
+                    datasets.length = 0;
+                    datasets.push(totalDs);
+                }
             }
 
             const ctx = document.getElementById('usage-overview-chart').getContext('2d');
@@ -2848,6 +2870,15 @@
             localStorage.setItem('showInternal', showInternal);
             updateInternalBtn();
             refreshDashboard();
+        });
+
+        // Totals Only toggle
+        const totalsToggle = document.getElementById('totals-only-toggle');
+        totalsToggle.addEventListener('click', function() {
+            totalsOnly = !totalsOnly;
+            this.classList.toggle('active', totalsOnly);
+            this.textContent = totalsOnly ? '📉 Show All' : '📉 Totals Only';
+            renderUsageChart();
         });
 
         document.getElementById('search-input').addEventListener('input', applyFilters);
