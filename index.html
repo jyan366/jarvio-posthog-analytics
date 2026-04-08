@@ -2874,7 +2874,7 @@
             totalsOnly = !totalsOnly;
             this.classList.toggle('active', totalsOnly);
             this.textContent = totalsOnly ? '📉 Show All' : '📉 Totals Only';
-            renderUsageChart();
+            updateUsageChart();
         });
 
         document.getElementById('search-input').addEventListener('input', applyFilters);
