@@ -2730,6 +2730,28 @@
                 };
             });
 
+            // Add Total line (sum of all active entities per day)
+            if (currentMetric !== 'successRate' && activeEntities.length > 1) {
+                const totalData = allDates.map(d => {
+                    return activeEntities.reduce((sum, name) => sum + (entityDailyMap[name][d] || 0), 0);
+                });
+                datasets.unshift({
+                    label: 'Total',
+                    data: totalData,
+                    borderColor: '#000000',
+                    backgroundColor: 'rgba(0,0,0,0.05)',
+                    tension: 0.4,
+                    borderWidth: 3.5,
+                    borderDash: [6, 3],
+                    pointRadius: 0,
+                    pointHoverRadius: 6,
+                    pointHoverBackgroundColor: '#000',
+                    pointHoverBorderColor: '#fff',
+                    pointHoverBorderWidth: 2,
+                    fill: false
+                });
+            }
+
             const ctx = document.getElementById('usage-overview-chart').getContext('2d');
             usageChart = new Chart(ctx, {
                 type: 'line',
