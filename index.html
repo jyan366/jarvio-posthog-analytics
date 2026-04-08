@@ -2748,9 +2748,9 @@
                 const rawTotalData = allDates.map(d => {
                     return activeEntities.reduce((sum, name) => sum + (entityDailyMap[name][d] || 0), 0);
                 });
-                const smoothedData = movingAverage(rawTotalData, 7);
+                const smoothedData = movingAverage(rawTotalData, 3);
                 datasets.unshift({
-                    label: 'Total (7-day avg)',
+                    label: 'Total (3-day avg)',
                     data: smoothedData,
                     borderColor: '#000000',
                     backgroundColor: 'rgba(0,0,0,0.05)',
@@ -2766,20 +2766,16 @@
             }
 
             // If totals-only mode, hide individual entity lines
-            if (totalsOnly) {
-                const totalDs = datasets.find(ds => ds.label.startsWith('Total'));
-                if (totalDs) {
-                    datasets.length = 0;
-                    datasets.push(totalDs);
-                }
-            }
+            const finalDatasets = totalsOnly
+                ? datasets.filter(ds => ds.label.startsWith('Total'))
+                : datasets;
 
             const ctx = document.getElementById('usage-overview-chart').getContext('2d');
             usageChart = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: dateLabels,
-                    datasets: datasets
+                    datasets: finalDatasets
                 },
                 options: {
                     responsive: true,
