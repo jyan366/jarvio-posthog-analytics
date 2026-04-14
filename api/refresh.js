@@ -155,7 +155,7 @@ async function fetchAllUserEvents(host, projectId, apiKey, startDate, endDate) {
       kind: 'HogQLQuery',
       query: `
         SELECT 
-          coalesce(person.properties.email, person.distinct_ids[1]) as identifier,
+          coalesce(person.properties.email, distinct_id) as identifier,
           toDate(timestamp) as day,
           count() as event_count,
           uniq(toStartOfMinute(timestamp)) as active_minutes
@@ -207,7 +207,7 @@ async function fetchAllUserEvents(host, projectId, apiKey, startDate, endDate) {
         kind: 'HogQLQuery',
         query: `
           SELECT 
-            coalesce(person.properties.email, person.distinct_ids[1]) as identifier,
+            coalesce(person.properties.email, distinct_id) as identifier,
             event,
             count() as cnt
           FROM events
