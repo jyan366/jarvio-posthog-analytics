@@ -2099,14 +2099,19 @@
         }
 
         function updateSummaryStats() {
-            const totalEntities = filteredData.length;
+            // Exclude anonymous from summary stats (they inflate user counts with bot/crawler IDs)
+            const statsData = filteredData.filter(e => {
+                const name = (e.name || e.org || '').toLowerCase();
+                return name !== 'anonymous' && !name.startsWith('anon-');
+            });
+            const totalEntities = statsData.length;
             const totalUsers = currentView === 'organization' 
-                ? filteredData.reduce((sum, e) => sum + e.userCount, 0)
-                : filteredData.length;
-            const totalTime = filteredData.reduce((sum, e) => sum + e.timeMinutes, 0);
+                ? statsData.reduce((sum, e) => sum + e.userCount, 0)
+                : statsData.length;
+            const totalTime = statsData.reduce((sum, e) => sum + e.timeMinutes, 0);
             const avgTime = totalEntities > 0 ? Math.round(totalTime / totalEntities) : 0;
-            const totalEvents = filteredData.reduce((sum, e) => sum + e.events, 0);
-            const totalFlows = filteredData.reduce((sum, e) => 
+            const totalEvents = statsData.reduce((sum, e) => sum + e.events, 0);
+            const totalFlows = statsData.reduce((sum, e) => 
                 e.flows ? sum + e.flows.started : sum, 0);
             
             document.getElementById('total-entities').textContent = totalEntities;
