@@ -749,11 +749,11 @@
         <div class="summary-stats">
             <div class="stat-card">
                 <div class="number" id="total-entities">0</div>
-                <div class="label" id="entity-label">Organizations</div>
+                <div class="label" id="entity-label">Active Organizations</div>
             </div>
             <div class="stat-card">
                 <div class="number" id="total-users">0</div>
-                <div class="label">Verified Users</div>
+                <div class="label">Active Verified Users</div>
             </div>
             <div class="stat-card time-stat">
                 <div class="number" id="total-time">0h 0m</div>
@@ -828,7 +828,7 @@
         }
 
         function isAnonymousDomain(domain) {
-            return domain === 'anonymous';
+            return domain === 'anonymous' || domain === 'personal-email';
         }
 
         // SAMPLE DATA WITH USER-LEVEL BREAKDOWN AND TIME TRACKING
@@ -2117,7 +2117,7 @@
             
             document.getElementById('total-entities').textContent = totalEntities;
             document.getElementById('entity-label').textContent = 
-                currentView === 'organization' ? 'Organizations' : 'Users';
+                currentView === 'organization' ? 'Active Organizations' : 'Active Users';
             document.getElementById('total-users').textContent = totalUsers;
             document.getElementById('total-time').textContent = formatTime(totalTime);
             document.getElementById('avg-time').textContent = formatTime(avgTime);

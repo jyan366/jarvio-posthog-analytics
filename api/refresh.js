@@ -47,14 +47,18 @@ module.exports = async function handler(req, res) {
     // Step 1: Get all persons (users) with their events
     const userData = await fetchAllUserEvents(HOST, PROJECT_ID, API_KEY, startStr, endStr);
 
-    // Step 2: Group by organization domain (anonymous users grouped under "anonymous")
+    // Step 2: Group by organization domain
     const orgMap = {};
     for (const [identifier, data] of Object.entries(userData)) {
       let domain, displayName;
       if (identifier.includes('@')) {
         domain = identifier.split('@')[1]?.toLowerCase();
         displayName = identifier;
-        if (!domain || GENERIC_DOMAINS.includes(domain)) continue;
+        if (!domain) continue;
+        // Group generic email domains (gmail, yahoo, etc.) under "personal-email"
+        if (GENERIC_DOMAINS.includes(domain)) {
+          domain = 'personal-email';
+        }
       } else {
         // Anonymous user - group under "anonymous"
         domain = 'anonymous';
@@ -164,7 +168,7 @@ async function fetchAllUserEvents(host, projectId, apiKey, startDate, endDate) {
           AND timestamp <= '${endDate}T23:59:59'
         GROUP BY identifier, day
         ORDER BY identifier, day
-        LIMIT 50000
+        LIMIT 100000
       `
     }
   });
