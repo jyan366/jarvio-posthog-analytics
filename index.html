@@ -2722,12 +2722,14 @@
                 });
             }
 
-            // Only show entities with data, sorted by total descending, limit to top 10
-            const activeEntities = Object.entries(entityTotals)
+            // All entities with data (for Total line)
+            const allActiveEntities = Object.entries(entityTotals)
                 .filter(([_, total]) => total > 0)
                 .sort((a, b) => b[1] - a[1])
-                .slice(0, 10)
                 .map(([name]) => name);
+
+            // Top 10 for individual lines (avoids chart clutter)
+            const activeEntities = allActiveEntities.slice(0, 10);
 
             // Date labels
             const dateLabels = allDates.map(d => {
@@ -2755,10 +2757,10 @@
                 };
             });
 
-            // Add Total line (7-day moving average, sum of all active entities per day)
-            if (currentMetric !== 'successRate' && activeEntities.length > 1) {
+            // Add Total line (3-day moving average, sum of ALL entities, not just top 10)
+            if (currentMetric !== 'successRate' && allActiveEntities.length > 1) {
                 const rawTotalData = allDates.map(d => {
-                    return activeEntities.reduce((sum, name) => sum + (entityDailyMap[name][d] || 0), 0);
+                    return allActiveEntities.reduce((sum, name) => sum + (entityDailyMap[name][d] || 0), 0);
                 });
                 const smoothedData = movingAverage(rawTotalData, 3);
                 datasets.unshift({
