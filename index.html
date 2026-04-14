@@ -723,6 +723,7 @@
             <button class="view-btn" data-view="user">👤 User-Level View</button>
             <span style="margin-left: 30px; border-left: 2px solid #dee2e6; padding-left: 20px; display: flex; align-items: center;">
                 <button id="show-internal-toggle" class="view-btn" style="font-size: 0.9em; padding: 6px 16px;">🚫 Show Internal</button>
+                <button id="hide-anonymous-toggle" class="view-btn active" style="font-size: 0.9em; padding: 6px 16px;">👻 Hide Anonymous</button>
             </span>
         </div>
         
@@ -824,6 +825,10 @@
         function isInternalDomain(domain) {
             const d = domain.toLowerCase();
             return INTERNAL_DOMAINS.some(id => d === id || d.endsWith('.' + id));
+        }
+
+        function isAnonymousDomain(domain) {
+            return domain === 'anonymous';
         }
 
         // SAMPLE DATA WITH USER-LEVEL BREAKDOWN AND TIME TRACKING
@@ -1895,6 +1900,7 @@
 
         // STATE
         let showInternal = localStorage.getItem('showInternal') === 'true';
+        let hideAnonymous = localStorage.getItem('hideAnonymous') !== 'false'; // default true
         let currentView = 'organization';  // 'organization' or 'user'
         let selectedOrganization = null;
         let currentFilter = 'all';
@@ -1952,7 +1958,7 @@
             if (currentView === 'organization') {
                 // Organization-level aggregation
                 TIME_SERIES_DATA.organizations
-                    .filter(org => !isGenericDomain(org.name))
+                    .filter(org => !isGenericDomain(org.name)).filter(org => !hideAnonymous || !isAnonymousDomain(org.name))
                     .filter(org => showInternal || !isInternalDomain(org.name))
                     .forEach(org => {
                         let totalTime = 0;
@@ -2012,7 +2018,7 @@
             } else {
                 // User-level view
                 TIME_SERIES_DATA.organizations
-                    .filter(org => !isGenericDomain(org.name))
+                    .filter(org => !isGenericDomain(org.name)).filter(org => !hideAnonymous || !isAnonymousDomain(org.name))
                     .filter(org => showInternal || !isInternalDomain(org.name))
                     .forEach(org => {
                         org.users.forEach(user => {
@@ -2613,7 +2619,7 @@
             const cfg = metricConfig[currentMetric];
             const allDates = getDateRange();
 
-            const orgs = TIME_SERIES_DATA.organizations.filter(o => !isGenericDomain(o.name)).filter(o => showInternal || !isInternalDomain(o.name));
+            const orgs = TIME_SERIES_DATA.organizations.filter(o => !isGenericDomain(o.name)).filter(o => !hideAnonymous || !isAnonymousDomain(o.name)).filter(o => showInternal || !isInternalDomain(o.name));
 
             // Helper: aggregate daily data for a single user into a daily map
             function buildUserDaily(user, daily) {
@@ -2865,6 +2871,25 @@
             showInternal = !showInternal;
             localStorage.setItem('showInternal', showInternal);
             updateInternalBtn();
+            refreshDashboard();
+        });
+
+        // Anonymous toggle
+        const anonToggle = document.getElementById('hide-anonymous-toggle');
+        function updateAnonBtn() {
+            if (hideAnonymous) {
+                anonToggle.textContent = '👻 Hide Anonymous';
+                anonToggle.classList.add('active');
+            } else {
+                anonToggle.textContent = '👻 Show Anonymous';
+                anonToggle.classList.remove('active');
+            }
+        }
+        updateAnonBtn();
+        anonToggle.addEventListener('click', function() {
+            hideAnonymous = !hideAnonymous;
+            localStorage.setItem('hideAnonymous', hideAnonymous);
+            updateAnonBtn();
             refreshDashboard();
         });
 

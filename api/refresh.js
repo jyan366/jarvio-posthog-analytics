@@ -47,14 +47,22 @@ module.exports = async function handler(req, res) {
     // Step 1: Get all persons (users) with their events
     const userData = await fetchAllUserEvents(HOST, PROJECT_ID, API_KEY, startStr, endStr);
 
-    // Step 2: Group by organization domain
+    // Step 2: Group by organization domain (anonymous users grouped under "anonymous")
     const orgMap = {};
-    for (const [email, data] of Object.entries(userData)) {
-      const domain = email.split('@')[1]?.toLowerCase();
-      if (!domain || GENERIC_DOMAINS.includes(domain)) continue;
+    for (const [identifier, data] of Object.entries(userData)) {
+      let domain, displayName;
+      if (identifier.includes('@')) {
+        domain = identifier.split('@')[1]?.toLowerCase();
+        displayName = identifier;
+        if (!domain || GENERIC_DOMAINS.includes(domain)) continue;
+      } else {
+        // Anonymous user - group under "anonymous"
+        domain = 'anonymous';
+        displayName = 'anon-' + identifier.slice(0, 8);
+      }
 
       if (!orgMap[domain]) orgMap[domain] = [];
-      orgMap[domain].push({ email, ...data });
+      orgMap[domain].push({ email: displayName, ...data });
     }
 
     // Step 3: Build TIME_SERIES_DATA format
@@ -141,33 +149,32 @@ async function fetchAllUserEvents(host, projectId, apiKey, startDate, endDate) {
   const userData = {};
 
   // Query 1: Get all events grouped by person with daily breakdown using HogQL
+  // Includes anonymous users - uses email if available, falls back to distinct_id
   const eventsQuery = await posthogQuery(host, projectId, apiKey, '/query/', {
     query: {
       kind: 'HogQLQuery',
       query: `
         SELECT 
-          person.properties.email as email,
+          coalesce(person.properties.email, person.distinct_ids[1]) as identifier,
           toDate(timestamp) as day,
           count() as event_count,
           uniq(toStartOfMinute(timestamp)) as active_minutes
         FROM events
         WHERE timestamp >= '${startDate}' 
           AND timestamp <= '${endDate}T23:59:59'
-          AND person.properties.email IS NOT NULL
-          AND person.properties.email != ''
-        GROUP BY email, day
-        ORDER BY email, day
-        LIMIT 10000
+        GROUP BY identifier, day
+        ORDER BY identifier, day
+        LIMIT 50000
       `
     }
   });
 
   if (eventsQuery.results) {
     for (const row of eventsQuery.results) {
-      const [email, day, eventCount, activeMinutes] = row;
-      if (!email || !email.includes('@')) continue;
+      const [identifier, day, eventCount, activeMinutes] = row;
+      if (!identifier) continue;
       
-      const cleanEmail = email.toLowerCase().trim();
+      const cleanEmail = identifier.toLowerCase().trim();
       if (!userData[cleanEmail]) {
         userData[cleanEmail] = {
           totalEvents: 0,
@@ -200,7 +207,7 @@ async function fetchAllUserEvents(host, projectId, apiKey, startDate, endDate) {
         kind: 'HogQLQuery',
         query: `
           SELECT 
-            person.properties.email as email,
+            coalesce(person.properties.email, person.distinct_ids[1]) as identifier,
             event,
             count() as cnt
           FROM events
@@ -209,16 +216,15 @@ async function fetchAllUserEvents(host, projectId, apiKey, startDate, endDate) {
             AND event IN ('flow_started', 'flow_completed', 'flow_failed', 
                           'Flow Started', 'Flow Completed', 'Flow Failed',
                           '$flow_started', '$flow_completed', '$flow_failed')
-            AND person.properties.email IS NOT NULL
-          GROUP BY email, event
+          GROUP BY identifier, event
         `
       }
     });
 
     if (flowsQuery.results) {
-      for (const [email, event, count] of flowsQuery.results) {
-        if (!email) continue;
-        const cleanEmail = email.toLowerCase().trim();
+      for (const [identifier, event, count] of flowsQuery.results) {
+        if (!identifier) continue;
+        const cleanEmail = identifier.toLowerCase().trim();
         if (!userData[cleanEmail]) continue;
 
         const evtLower = event.toLowerCase().replace('$', '');
