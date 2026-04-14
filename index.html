@@ -753,7 +753,7 @@
             </div>
             <div class="stat-card">
                 <div class="number" id="total-users">0</div>
-                <div class="label">Total Users</div>
+                <div class="label">Verified Users</div>
             </div>
             <div class="stat-card time-stat">
                 <div class="number" id="total-time">0h 0m</div>
@@ -2101,8 +2101,9 @@
         function updateSummaryStats() {
             // Exclude anonymous from summary stats (they inflate user counts with bot/crawler IDs)
             const statsData = filteredData.filter(e => {
-                const name = (e.name || e.org || '').toLowerCase();
-                return name !== 'anonymous' && !name.startsWith('anon-');
+                const name = (e.name || e.organization || '').toLowerCase();
+                const email = (e.email || '').toLowerCase();
+                return name !== 'anonymous' && !email.startsWith('anon-');
             });
             const totalEntities = statsData.length;
             const totalUsers = currentView === 'organization' 
